@@ -21,6 +21,12 @@ const PRESETS = {
     userPromptTemplate: '{{text}}',
     postAction: 'paste'
   },
+  'translate-sr': {
+    actionName: 'Translate SR',
+    systemPrompt: 'You are a professional translator. Translate the following text to Serbian. Preserve the tone and style. Output ONLY the translated text.',
+    userPromptTemplate: '{{text}}',
+    postAction: 'paste'
+  },
   'summarize': {
     actionName: 'Summarize',
     systemPrompt: 'You are an expert at summarization. Summarize the following content concisely in 3-5 bullet points. Use clear, simple language.',

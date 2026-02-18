@@ -5,6 +5,10 @@ Stream Deck plugin for AI-powered text processing. Captures selected text or cli
 
 **Supported Providers:** OpenAI, Anthropic, OpenRouter, Custom endpoints
 
+**Actions:**
+- **AI Text Action** - Regular key with customizable prompts
+- **AI Prompt Selector** - Stream Deck+ encoder with preset switching
+
 ---
 
 ## Architecture
@@ -26,8 +30,8 @@ com.dzarlax.ai-assistant.sdPlugin/
 
 ```
 src/
-├── main.ts           # Entry point - registers action, connects to Stream Deck
-├── plugin.ts         # AITextAction class
+├── main.ts           # Entry point - registers actions, connects
+├── plugin.ts         # AITextAction, PromptSelectorAction classes
 ├── api-client.ts     # AI API calls (OpenAI, Anthropic, OpenRouter)
 └── system-utils.ts   # Clipboard & keyboard emulation
 
@@ -38,9 +42,12 @@ property-inspector/
 
 ---
 
-## Action: AI Text Action
+## Actions
 
+### 1. AI Text Action
 **UUID:** `com.dzarlax.ai-assistant.text-action`
+
+Regular key action with customizable prompts.
 
 **States:**
 - 0: Idle
@@ -48,15 +55,37 @@ property-inspector/
 - 2: Success
 - 3: Error
 
-**Workflow:**
-1. Capture input (selection via Cmd+C or clipboard content)
-2. Build prompt from template
-3. Call AI API
-4. Output result (paste or copy to clipboard)
+### 2. AI Prompt Selector (Stream Deck+)
+**UUID:** `com.dzarlax.ai-assistant.prompt-selector`
 
-**Timing:**
-- 150ms delay after simulateCopy() for clipboard to update
-- 100ms delay after copyToClipboard() before simulatePaste()
+Encoder/dial action for quick preset switching.
+
+**Controls:**
+- **Rotate** - Switch between presets
+- **Press (Dial)** - Execute selected preset
+- **Tap (Touch)** - Execute selected preset
+
+**LCD Display:**
+- `title` - Preset name
+- `value` - Position (e.g., "3/8") or status
+- `indicator` - Visual progress bar
+
+---
+
+## Built-in Presets (8 total)
+
+| # | Key | Name | Post Action |
+|---|-----|------|-------------|
+| 1 | fix-grammar | Fix Grammar | paste |
+| 2 | translate-en | Translate EN | paste |
+| 3 | translate-ru | Translate RU | paste |
+| 4 | translate-sr | Translate SR | paste |
+| 5 | summarize | Summarize | copy |
+| 6 | explain-code | Explain Code | copy |
+| 7 | professional | Professional | paste |
+| 8 | casual | Casual | paste |
+
+Presets are defined in `src/plugin.ts` as `PRESETS` array.
 
 ---
 
@@ -67,34 +96,24 @@ property-inspector/
 |---------|------|---------|-------------|
 | provider | string | "openai" | openai, anthropic, openrouter, custom |
 | apiKey | string | - | API key |
-| baseUrl | string | - | Custom endpoint (for custom provider) |
+| baseUrl | string | - | Custom endpoint |
 | model | string | "gpt-4o" | Model identifier |
 | temperature | number | 0.7 | 0-2 |
 | maxTokens | number | 4096 | Max response length |
 | timeout | number | 30 | Seconds |
 
-### Action Settings
-| Setting | Type | Default | Description |
-|---------|------|---------|-------------|
-| actionName | string | - | Display name |
-| systemPrompt | string | "You are a helpful assistant." | System prompt |
-| userPromptTemplate | string | "{{text}}" | Template with {{text}} placeholder |
-| inputMode | string | "selection" | selection or clipboard |
-| postAction | string | "paste" | paste or copy |
+### Action Settings (Text Action)
+| Setting | Type | Default |
+|---------|------|---------|
+| systemPrompt | string | "You are a helpful assistant." |
+| userPromptTemplate | string | "{{text}}" |
+| inputMode | string | "selection" |
+| postAction | string | "paste" |
 
----
-
-## Built-in Presets
-
-| Preset | Description |
-|--------|-------------|
-| fix-grammar | Fix spelling & grammar |
-| translate-en | Translate to English |
-| translate-ru | Translate to Russian |
-| summarize | Summarize in bullet points |
-| explain-code | Explain code |
-| professional | Professional tone |
-| casual | Casual tone |
+### Encoder Settings (Prompt Selector)
+| Setting | Type | Description |
+|---------|------|-------------|
+| presetIndex | number | Current preset index (0-7) |
 
 ---
 
@@ -113,18 +132,28 @@ anthropic/claude-sonnet-4, openai/gpt-4o, google/gemini-pro-1.5, meta-llama/llam
 
 ## Key Implementation Details
 
+### Shared Logic (`processWithAI`)
+Both actions use shared `processWithAI()` function:
+1. Get global settings (API key, model, etc.)
+2. Capture input (selection or clipboard)
+3. Build prompt from template
+4. Call AI API
+5. Output result (paste or copy)
+
 ### System Utils (`src/system-utils.ts`)
 - `copyToClipboard(text)` - spawn + pbcopy with UTF-8 encoding
 - `pasteFromClipboard()` - pbpaste with 10MB maxBuffer
 - `simulateCopy()` - key code 8 + Cmd (layout-independent)
 - `simulatePaste()` - key code 9 + Cmd (layout-independent)
 
-**Note:** Key codes (8=C, 9=V) work with any keyboard layout.
-
-### API Client (`src/api-client.ts`)
-- OpenAI format: `{ model, messages: [{ role, content }] }`
-- Anthropic format: `{ model, system, messages }`
-- Returns `{ text, usage }`
+### Encoder Feedback
+```typescript
+await action.setFeedback({
+  title: preset.name,
+  value: `${index + 1}/8`,
+  indicator: Math.round(((index + 1) / 8) * 100)
+});
+```
 
 ---
 
