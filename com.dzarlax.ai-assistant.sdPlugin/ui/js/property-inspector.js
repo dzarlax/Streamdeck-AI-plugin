@@ -67,6 +67,13 @@ const FALLBACK_MODELS = {
     { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
     { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus' }
   ],
+  gemini: [
+    { id: 'gemini-2.5-pro-preview-06-05', name: 'Gemini 2.5 Pro' },
+    { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
+    { id: 'gemini-2.0-flash-lite', name: 'Gemini 2.0 Flash Lite' },
+    { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+    { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' }
+  ],
   openrouter: [
     { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
     { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
@@ -132,6 +139,7 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
 function getModelsEndpoint(provider, baseUrl) {
   if (provider === 'openai') return { url: 'https://api.openai.com/v1/models', headers: {} };
   if (provider === 'anthropic') return { url: 'https://api.anthropic.com/v1/models', headers: { 'anthropic-version': '2023-06-01' } };
+  if (provider === 'gemini') return { url: 'https://generativelanguage.googleapis.com/v1beta/models', headers: {} };
   if (provider === 'openrouter') return { url: 'https://openrouter.ai/api/v1/models', headers: {} };
   if (provider === 'custom' && baseUrl) {
     const base = baseUrl.replace(/\/chat\/completions\/?$/, '').replace(/\/$/, '');
@@ -144,6 +152,16 @@ function parseModelsResponse(provider, data) {
   if (provider === 'anthropic') {
     return (data.data || [])
       .map(m => ({ id: m.id, name: m.display_name || m.id }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  if (provider === 'gemini') {
+    return (data.models || [])
+      .map(m => {
+        const id = m.name.replace('models/', '');
+        return { id, name: m.displayName || id };
+      })
+      .filter(m => m.id.startsWith('gemini'))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
@@ -184,12 +202,15 @@ async function fetchModels() {
 
   try {
     const headers = { ...endpoint.headers, 'Content-Type': 'application/json' };
+    let url = endpoint.url;
+
     if (apiKey) {
       if (provider === 'anthropic') headers['x-api-key'] = apiKey;
+      else if (provider === 'gemini') url = endpoint.url + '?key=' + apiKey;
       else headers['Authorization'] = 'Bearer ' + apiKey;
     }
 
-    const resp = await fetch(endpoint.url, { method: 'GET', headers });
+    const resp = await fetch(url, { method: 'GET', headers });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
 
     const data = await resp.json();

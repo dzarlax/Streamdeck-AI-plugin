@@ -28629,6 +28629,38 @@ async function callAI(systemPrompt, userPrompt, config) {
             }
         };
     }
+    else if (provider === 'gemini') {
+        const url = baseUrl || `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+        const response = await axios.post(url, {
+            contents: [
+                {
+                    parts: [{ text: userPrompt }]
+                }
+            ],
+            systemInstruction: {
+                parts: [{ text: systemPrompt }]
+            },
+            generationConfig: {
+                temperature,
+                maxOutputTokens: maxTokens
+            }
+        }, {
+            params: {
+                key: apiKey
+            },
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            timeout: timeoutMs
+        });
+        return {
+            text: response.data.candidates[0].content.parts[0].text,
+            usage: {
+                promptTokens: response.data.usageMetadata?.promptTokenCount,
+                completionTokens: response.data.usageMetadata?.candidatesTokenCount
+            }
+        };
+    }
     throw new Error(`Unsupported provider: ${provider}`);
 }
 

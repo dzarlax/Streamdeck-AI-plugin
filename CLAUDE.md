@@ -3,7 +3,7 @@
 ## Overview
 Stream Deck plugin for AI-powered text processing. Captures selected text or clipboard, sends to AI API, and pastes the result.
 
-**Supported Providers:** OpenAI, Anthropic, OpenRouter, Custom endpoints
+**Supported Providers:** OpenAI, Anthropic, Google Gemini, OpenRouter, Custom endpoints
 
 **Actions:**
 - **AI Text Action** - Regular key with customizable prompts
@@ -123,7 +123,10 @@ Presets are defined in `src/plugin.ts` as `PRESETS` array.
 o3-mini, o1, o1-mini, gpt-4o, gpt-4o-mini
 
 ### Anthropic
-claude-3-7-sonnet-latest, claude-3-5-sonnet-20241022, claude-3-5-haiku-20241022, claude-3-opus-20240229
+claude-sonnet-4-20250514, claude-3-7-sonnet-latest, claude-3-5-haiku-20241022, claude-3-opus-20240229
+
+### Google Gemini
+gemini-2.5-pro-preview-06-05, gemini-2.0-flash, gemini-2.0-flash-lite, gemini-1.5-pro, gemini-1.5-flash
 
 ### OpenRouter
 anthropic/claude-sonnet-4, openai/gpt-4o, google/gemini-pro-1.5, meta-llama/llama-3.1-70b-instruct
