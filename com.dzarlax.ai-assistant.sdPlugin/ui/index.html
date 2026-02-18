@@ -7,17 +7,17 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/GeekyEggo/SDPI@main/dist/css/sdpi.css">
   <style>
     :root {
-      --sdpi-color: #d8d8d8;
-      --sdpi-label-color: #a0a0a0;
-      --sdpi-value-color: #e0e0e0;
-      --sdpi-border-color: #3a3a3a;
-      --sdpi-background: #1e1e1e;
-      --sdpi-group-color: #6e6e6e;
+      --accent: #96d7ff;
+      --bg: #1e1e1e;
+      --bg-input: #2a2a2a;
+      --border: #3a3a3a;
+      --text: #d8d8d8;
+      --text-muted: #777;
     }
 
     body {
-      background-color: var(--sdpi-background);
-      color: var(--sdpi-color);
+      background-color: var(--bg);
+      color: var(--text);
     }
 
     .sdpi-wrapper {
@@ -25,39 +25,36 @@
     }
 
     .sdpi-heading {
-      color: #96d7ff;
-      border-bottom: 1px solid #3a3a3a;
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
       padding-bottom: 8px;
       margin-top: 16px;
       font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      transition: opacity 0.2s;
     }
+
+    .sdpi-heading:hover { opacity: 0.8; }
+    .sdpi-heading::before { content: "\25BC "; font-size: 10px; }
+    .sdpi-heading.collapsed::before { content: "\25B6 "; }
 
     .sdpi-item-label {
-      color: var(--sdpi-label-color) !important;
+      color: #a0a0a0 !important;
     }
 
-    .sdpi-item-value {
-      color: var(--sdpi-value-color) !important;
-      background-color: #2a2a2a !important;
-      border-color: var(--sdpi-border-color) !important;
-    }
-
-    .sdpi-item-value:focus {
-      border-color: #96d7ff !important;
-    }
-
-    select.sdpi-item-value {
-      background-color: #2a2a2a !important;
-    }
-
-    input[type="text"], input[type="password"], input[type="number"], textarea, select {
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    textarea,
+    select {
       color: #e0e0e0 !important;
-      background-color: #2a2a2a !important;
-      border: 1px solid #3a3a3a !important;
+      background-color: var(--bg-input) !important;
+      border: 1px solid var(--border) !important;
     }
 
-    input[type="text"]:focus, input[type="password"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
-      border-color: #96d7ff !important;
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent) !important;
       outline: none;
     }
 
@@ -69,73 +66,47 @@
 
     .help-text {
       font-size: 10px;
-      color: #666;
+      color: var(--text-muted);
       margin-top: 4px;
-    }
-
-    .section-toggle {
-      cursor: pointer;
-      user-select: none;
-      transition: opacity 0.2s;
-    }
-
-    .section-toggle:hover {
-      opacity: 0.8;
-    }
-
-    .section-toggle::before {
-      content: "▼ ";
-      font-size: 10px;
-    }
-
-    .section-toggle.collapsed::before {
-      content: "▶ ";
-    }
-
-    .section-content {
-      overflow: hidden;
-      transition: max-height 0.3s ease-out;
     }
 
     .section-content.collapsed {
       display: none;
     }
 
-    .model-group {
-      display: none;
+    .model-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
     }
 
-    .model-group.active {
-      display: block;
-    }
+    .model-row select { flex: 1; }
 
-    button.sdpi-item-value {
+    .btn {
       background: linear-gradient(135deg, #4a9eff 0%, #2d7dd2 100%) !important;
       border: none !important;
       color: white !important;
       font-weight: 500;
       cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.1s;
+      padding: 4px 12px;
+      border-radius: 3px;
+      font-size: 12px;
+      white-space: nowrap;
+      transition: opacity 0.15s;
     }
 
-    button.sdpi-item-value:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(74, 158, 255, 0.3);
-    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-    button.sdpi-item-value:active {
-      transform: translateY(0);
-    }
-
-    .divider {
-      height: 1px;
-      background: #3a3a3a;
-      margin: 16px 0;
+    .btn-block {
+      display: block;
+      width: 100%;
+      padding: 6px 12px;
     }
 
     input[type="range"] {
       -webkit-appearance: none;
-      background: #3a3a3a !important;
+      background: var(--border) !important;
       border-radius: 4px;
       height: 6px;
     }
@@ -144,23 +115,36 @@
       -webkit-appearance: none;
       width: 14px;
       height: 14px;
-      background: #96d7ff;
+      background: var(--accent);
       border-radius: 50%;
       cursor: pointer;
     }
 
-    #temperatureValue {
-      color: #96d7ff;
+    .temp-value {
+      color: var(--accent);
       font-weight: 500;
       min-width: 30px;
       display: inline-block;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    .unit {
+      color: var(--text-muted);
+      margin-left: 4px;
+      font-size: 11px;
     }
   </style>
 </head>
 <body>
   <div class="sdpi-wrapper">
+
     <!-- API Configuration -->
-    <div class="sdpi-heading section-toggle" onclick="toggleSection('apiSection')">API Configuration</div>
+    <div class="sdpi-heading" onclick="toggleSection('apiSection')">API Configuration</div>
     <div id="apiSection" class="section-content">
 
       <div class="sdpi-item">
@@ -183,137 +167,109 @@
         <input class="sdpi-item-value" type="text" id="baseUrl" placeholder="https://api.example.com/v1">
       </div>
 
-      <!-- OpenAI Models -->
-      <div class="model-group active" id="openai-models">
-        <div class="sdpi-item">
-          <div class="sdpi-item-label">Model</div>
-          <select class="sdpi-item-value select" id="model-openai">
-            <option value="o3-mini">o3-mini (Reasoning, Fast)</option>
-            <option value="o1">o1 (Full Reasoning)</option>
-            <option value="o1-mini">o1-mini (Reasoning, Compact)</option>
-            <option value="gpt-4o">GPT-4o (Standard)</option>
-            <option value="gpt-4o-mini">GPT-4o Mini (Fast)</option>
-          </select>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">Model</div>
+        <div class="sdpi-item-value model-row">
+          <select class="select" id="modelSelect" style="flex:1"></select>
+          <button class="btn" id="fetchModelsBtn" title="Load models from API">Fetch</button>
         </div>
       </div>
 
-      <!-- Anthropic Models -->
-      <div class="model-group" id="anthropic-models">
-        <div class="sdpi-item">
-          <div class="sdpi-item-label">Model</div>
-          <select class="sdpi-item-value select" id="model-anthropic">
-            <option value="claude-3-7-sonnet-latest">Claude 3.7 Sonnet (Latest)</option>
-            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</option>
-            <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku</option>
-            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-          </select>
-        </div>
+      <div class="sdpi-item" id="customModelGroup" style="display: none;">
+        <div class="sdpi-item-label">Custom</div>
+        <input class="sdpi-item-value" type="text" id="customModelInput" placeholder="model-name">
       </div>
 
-      <!-- OpenRouter Models -->
-      <div class="model-group" id="openrouter-models">
-        <div class="sdpi-item">
-          <div class="sdpi-item-label">Model</div>
-          <select class="sdpi-item-value select" id="model-openrouter">
-            <option value="anthropic/claude-sonnet-4">Claude Sonnet 4</option>
-            <option value="anthropic/claude-3.5-sonnet">Claude 3.5 Sonnet</option>
-            <option value="openai/gpt-4o">GPT-4o</option>
-            <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-            <option value="google/gemini-pro-1.5">Gemini Pro 1.5</option>
-            <option value="meta-llama/llama-3.1-70b-instruct">Llama 3.1 70B</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Custom Model -->
-      <div class="model-group" id="custom-models">
-        <div class="sdpi-item">
-          <div class="sdpi-item-label">Model Name</div>
-          <input class="sdpi-item-value" type="text" id="model-custom" placeholder="model-name">
-        </div>
-      </div>
+      <div id="fetchStatus" class="help-text" style="text-align:right; padding-right:14px;"></div>
 
       <div class="sdpi-item">
         <div class="sdpi-item-label">Temperature</div>
-        <input class="sdpi-item-value" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" style="width: 180px;">
-        <span id="temperatureValue">0.7</span>
+        <input class="sdpi-item-value" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" style="width:160px">
+        <span class="temp-value" id="temperatureValue">0.7</span>
       </div>
 
       <div class="sdpi-item">
         <div class="sdpi-item-label">Max Tokens</div>
-        <input class="sdpi-item-value" type="number" id="maxTokens" value="4096" min="100" max="128000" style="width: 100px;">
+        <input class="sdpi-item-value" type="number" id="maxTokens" value="4096" min="100" max="128000" style="width:100px">
       </div>
 
       <div class="sdpi-item">
         <div class="sdpi-item-label">Timeout</div>
-        <input class="sdpi-item-value" type="number" id="timeout" value="30" min="5" max="120" style="width: 60px;">
-        <span style="color: #666; margin-left: 4px;">sec</span>
+        <input class="sdpi-item-value" type="number" id="timeout" value="30" min="5" max="120" style="width:60px">
+        <span class="unit">sec</span>
       </div>
     </div>
 
     <div class="divider"></div>
 
-    <!-- Action Settings -->
-    <div class="sdpi-heading">Prompt Settings</div>
+    <!-- Prompt Settings -->
+    <div class="sdpi-heading" onclick="toggleSection('promptSection')">Prompt Settings</div>
+    <div id="promptSection" class="section-content">
 
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">Action Name</div>
-      <input class="sdpi-item-value" type="text" id="actionName" placeholder="My AI Action">
-    </div>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">Action Name</div>
+        <input class="sdpi-item-value" type="text" id="actionName" placeholder="My AI Action">
+      </div>
 
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">Input</div>
-      <select class="sdpi-item-value select" id="inputMode">
-        <option value="selection">Selected Text (Copy First)</option>
-        <option value="clipboard">Clipboard Content</option>
-      </select>
-    </div>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">Input</div>
+        <select class="sdpi-item-value select" id="inputMode">
+          <option value="selection">Selected Text (Copy First)</option>
+          <option value="clipboard">Clipboard Content</option>
+        </select>
+      </div>
 
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">System Prompt</div>
-      <span class="sdpi-item-value">
-        <textarea id="systemPrompt" placeholder="You are a helpful assistant..."></textarea>
-      </span>
-      <div class="help-text">Defines AI behavior and role</div>
-    </div>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">System Prompt</div>
+        <span class="sdpi-item-value">
+          <textarea id="systemPrompt" placeholder="You are a helpful assistant..."></textarea>
+        </span>
+        <div class="help-text">Defines AI behavior and role</div>
+      </div>
 
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">User Template</div>
-      <span class="sdpi-item-value">
-        <textarea id="userPromptTemplate" placeholder="{{text}}"></textarea>
-      </span>
-      <div class="help-text">Use {{text}} for captured content</div>
-    </div>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">User Template</div>
+        <span class="sdpi-item-value">
+          <textarea id="userPromptTemplate" placeholder="{{text}}"></textarea>
+        </span>
+        <div class="help-text">Use {{text}} for captured content</div>
+      </div>
 
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">After Processing</div>
-      <select class="sdpi-item-value select" id="postAction">
-        <option value="paste">Paste Result</option>
-        <option value="copy">Copy to Clipboard</option>
-      </select>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">After Processing</div>
+        <select class="sdpi-item-value select" id="postAction">
+          <option value="paste">Paste Result</option>
+          <option value="copy">Copy to Clipboard</option>
+        </select>
+      </div>
     </div>
 
     <div class="divider"></div>
 
     <!-- Presets -->
-    <div class="sdpi-heading">Quick Presets</div>
+    <div class="sdpi-heading" onclick="toggleSection('presetSection')">Quick Presets</div>
+    <div id="presetSection" class="section-content">
 
-    <div class="sdpi-item">
-      <select class="sdpi-item-value select" id="presetSelector">
-        <option value="">Choose a preset...</option>
-        <option value="fix-grammar">✓ Fix Grammar & Spelling</option>
-        <option value="translate-en">🌐 Translate to English</option>
-        <option value="translate-ru">🌐 Translate to Russian</option>
-        <option value="summarize">📝 Summarize</option>
-        <option value="explain-code">💻 Explain Code</option>
-        <option value="professional">👔 Make Professional</option>
-        <option value="casual">😊 Make Casual</option>
-      </select>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">Preset</div>
+        <select class="sdpi-item-value select" id="presetSelector">
+          <option value="">Choose a preset...</option>
+          <option value="fix-grammar">Fix Grammar & Spelling</option>
+          <option value="translate-en">Translate to English</option>
+          <option value="translate-ru">Translate to Russian</option>
+          <option value="summarize">Summarize</option>
+          <option value="explain-code">Explain Code</option>
+          <option value="professional">Make Professional</option>
+          <option value="casual">Make Casual</option>
+        </select>
+      </div>
+
+      <div class="sdpi-item">
+        <div class="sdpi-item-label"></div>
+        <button class="sdpi-item-value btn btn-block" id="loadPresetBtn">Apply Preset</button>
+      </div>
     </div>
 
-    <div class="sdpi-item">
-      <button class="sdpi-item-value" id="loadPresetBtn" style="width: 100%;">Apply Preset</button>
-    </div>
   </div>
 
   <script src="js/property-inspector.js"></script>

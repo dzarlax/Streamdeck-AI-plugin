@@ -27,10 +27,11 @@ process.on('unhandledRejection', (reason: any) => {
 });
 
 import streamDeck from '@elgato/streamdeck';
-import { AITextAction } from './plugin';
+import { AITextAction, PromptSelectorAction } from './plugin';
 
 debugLog('Registering actions...');
 streamDeck.actions.registerAction(new AITextAction());
+streamDeck.actions.registerAction(new PromptSelectorAction());
 
 debugLog('Connecting...');
 streamDeck.connect().then(() => {

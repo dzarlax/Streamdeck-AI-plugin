@@ -7,121 +7,237 @@
   <title>AI Plugin - Global Settings</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/GeekyEggo/SDPI@main/dist/css/sdpi.css">
   <style>
+    :root {
+      --accent: #96d7ff;
+      --bg: #1e1e1e;
+      --bg-input: #2a2a2a;
+      --border: #3a3a3a;
+      --text: #d8d8d8;
+      --text-muted: #777;
+      --success: #4caf50;
+      --error: #f44336;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+    }
+
     .sdpi-wrapper {
       padding: 12px;
     }
 
     .sdpi-heading {
+      color: var(--accent);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 8px;
       margin-top: 16px;
-      border-bottom: 1px solid #444;
+      font-weight: 600;
+    }
+
+    .sdpi-item-label {
+      color: #a0a0a0 !important;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="number"],
+    select {
+      color: #e0e0e0 !important;
+      background-color: var(--bg-input) !important;
+      border: 1px solid var(--border) !important;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--accent) !important;
+      outline: none;
     }
 
     .help-text {
       font-size: 10px;
-      color: #888;
+      color: var(--text-muted);
       margin-top: 4px;
     }
 
-    .status-indicator {
+    .model-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .model-row select {
+      flex: 1;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #4a9eff 0%, #2d7dd2 100%) !important;
+      border: none !important;
+      color: white !important;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 4px 12px;
+      border-radius: 3px;
+      font-size: 12px;
+      white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+
+    .btn:hover {
+      opacity: 0.85;
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-block {
+      display: block;
+      width: 100%;
+      padding: 6px 12px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      background: var(--border) !important;
+      border-radius: 4px;
+      height: 6px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: var(--accent);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .temp-value {
+      color: var(--accent);
+      font-weight: 500;
+      min-width: 30px;
       display: inline-block;
+    }
+
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .status-dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      margin-right: 8px;
+      background: #555;
+      flex-shrink: 0;
     }
 
-    .status-ok {
-      background-color: #4caf50;
+    .status-dot.ok { background: var(--success); }
+    .status-dot.err { background: var(--error); }
+
+    .status-text {
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
-    .status-error {
-      background-color: #f44336;
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
     }
 
-    .status-unknown {
-      background-color: #888;
+    .unit {
+      color: var(--text-muted);
+      margin-left: 4px;
+      font-size: 11px;
     }
   </style>
 </head>
 
 <body>
   <div class="sdpi-wrapper">
-    <div class="sdpi-heading">API Configuration</div>
+
+    <div class="sdpi-heading">Provider</div>
 
     <div class="sdpi-item">
-      <div class="sdpi-item-label">Provider</div>
+      <div class="sdpi-item-label">Service</div>
       <select class="sdpi-item-value select" id="provider">
         <option value="openai">OpenAI</option>
-        <option value="anthropic">Anthropic</option>
+        <option value="anthropic">Anthropic (Claude)</option>
         <option value="openrouter">OpenRouter</option>
-        <option value="custom">Custom (OpenAI-compatible)</option>
+        <option value="custom">Custom Endpoint</option>
       </select>
     </div>
 
     <div class="sdpi-item">
       <div class="sdpi-item-label">API Key</div>
-      <input class="sdpi-item-value" type="password" id="apiKey" placeholder="sk-...">
-      <div class="help-text">Your API key is stored securely in Stream Deck settings.</div>
+      <input class="sdpi-item-value" type="password" id="apiKey" placeholder="Enter your API key...">
     </div>
 
     <div class="sdpi-item" id="baseUrlGroup" style="display: none;">
       <div class="sdpi-item-label">Base URL</div>
-      <input class="sdpi-item-value" type="text" id="baseUrl" placeholder="https://api.openai.com/v1">
-      <div class="help-text">Custom API endpoint (e.g., for local Ollama or proxy).</div>
+      <input class="sdpi-item-value" type="text" id="baseUrl" placeholder="https://api.example.com/v1">
+      <div class="help-text">OpenAI-compatible endpoint URL</div>
     </div>
+
+    <div class="divider"></div>
+
+    <div class="sdpi-heading">Model</div>
 
     <div class="sdpi-item">
       <div class="sdpi-item-label">Model</div>
-      <input class="sdpi-item-value" type="text" id="model" placeholder="gpt-4o">
-      <div class="help-text">Examples: gpt-4o, gpt-3.5-turbo, claude-3-5-sonnet-20241022</div>
+      <div class="sdpi-item-value model-row">
+        <select class="select" id="modelSelect" style="flex:1"></select>
+        <button class="btn" id="fetchModelsBtn" title="Load models from API">Fetch</button>
+      </div>
     </div>
 
-    <div class="sdpi-heading">Model Parameters</div>
+    <div class="sdpi-item" id="customModelGroup" style="display: none;">
+      <div class="sdpi-item-label">Custom</div>
+      <input class="sdpi-item-value" type="text" id="customModelInput" placeholder="model-name">
+    </div>
+
+    <div id="fetchStatus" class="help-text" style="text-align:right; padding-right:14px;"></div>
+
+    <div class="divider"></div>
+
+    <div class="sdpi-heading">Parameters</div>
 
     <div class="sdpi-item">
       <div class="sdpi-item-label">Temperature</div>
-      <input class="sdpi-item-value" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
-      <div class="range-value" id="temperatureValue">0.7</div>
-      <div class="help-text">Higher = more creative, Lower = more focused</div>
+      <input class="sdpi-item-value" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" style="width:160px">
+      <span class="temp-value" id="temperatureValue">0.7</span>
     </div>
 
     <div class="sdpi-item">
       <div class="sdpi-item-label">Max Tokens</div>
-      <input class="sdpi-item-value" type="number" id="maxTokens" min="100" max="32000" value="4096">
-      <div class="help-text">Maximum response length</div>
+      <input class="sdpi-item-value" type="number" id="maxTokens" value="4096" min="100" max="128000" style="width:100px">
     </div>
 
     <div class="sdpi-item">
-      <div class="sdpi-item-label">Timeout (seconds)</div>
-      <input class="sdpi-item-value" type="number" id="timeout" min="5" max="120" value="30">
+      <div class="sdpi-item-label">Timeout</div>
+      <input class="sdpi-item-value" type="number" id="timeout" value="30" min="5" max="120" style="width:60px">
+      <span class="unit">sec</span>
     </div>
 
-    <div class="sdpi-heading">Connection Test</div>
+    <div class="divider"></div>
+
+    <div class="sdpi-heading">Connection</div>
 
     <div class="sdpi-item">
-      <button class="sdpi-item-value" id="testConnection">Test Connection</button>
-      <span id="connectionStatus" class="status-indicator status-unknown"></span>
-      <span id="connectionText">Not tested</span>
+      <div class="sdpi-item-label"></div>
+      <button class="sdpi-item-value btn btn-block" id="testConnection">Test Connection</button>
     </div>
 
-    <div class="sdpi-heading">Quick Models</div>
-
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">OpenAI</div>
-      <div class="sdpi-item-value">
-        <button class="model-btn" data-model="o3-mini">o3-mini</button>
-        <button class="model-btn" data-model="o1-mini">o1-mini</button>
-        <button class="model-btn" data-model="gpt-4o">GPT-4o</button>
-      </div>
+    <div class="status-row" style="padding-left: 120px;">
+      <span class="status-dot" id="connectionDot"></span>
+      <span class="status-text" id="connectionText">Not tested</span>
     </div>
 
-    <div class="sdpi-item">
-      <div class="sdpi-item-label">Anthropic</div>
-      <div class="sdpi-item-value">
-        <button class="model-btn" data-model="claude-3-7-sonnet-latest">Claude 3.7 Sonnet</button>
-        <button class="model-btn" data-model="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</button>
-      </div>
-    </div>
   </div>
 
   <script src="js/global-settings.js"></script>

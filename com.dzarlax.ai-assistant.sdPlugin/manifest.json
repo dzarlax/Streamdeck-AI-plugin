@@ -59,6 +59,28 @@
       "Tooltip": "Process text with AI",
       "UUID": "com.dzarlax.ai-assistant.text-action",
       "PropertyInspectorPath": "ui/index.html"
+    },
+    {
+      "UUID": "com.dzarlax.ai-assistant.prompt-selector",
+      "Name": "AI Prompt Selector",
+      "Icon": "imgs/actionIcon",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "Icon": "imgs/encoderIdle",
+        "layout": "$B1",
+        "TriggerDescription": {
+          "Rotate": "Change prompt",
+          "Push": "Run AI action",
+          "Touch": "Run AI action"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actionIdle"
+        }
+      ],
+      "Tooltip": "Rotate to select prompt, press to execute",
+      "SupportedInMultiActions": false
     }
   ]
 }
