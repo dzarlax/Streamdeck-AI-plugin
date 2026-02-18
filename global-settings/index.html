@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Plugin - Global Settings</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/GeekyEggo/SDPI@main/dist/css/sdpi.css">
+  <style>
+    .sdpi-wrapper {
+      padding: 12px;
+    }
+
+    .sdpi-heading {
+      margin-top: 16px;
+      border-bottom: 1px solid #444;
+    }
+
+    .help-text {
+      font-size: 10px;
+      color: #888;
+      margin-top: 4px;
+    }
+
+    .status-indicator {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    .status-ok {
+      background-color: #4caf50;
+    }
+
+    .status-error {
+      background-color: #f44336;
+    }
+
+    .status-unknown {
+      background-color: #888;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="sdpi-wrapper">
+    <div class="sdpi-heading">API Configuration</div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Provider</div>
+      <select class="sdpi-item-value select" id="provider">
+        <option value="openai">OpenAI</option>
+        <option value="anthropic">Anthropic</option>
+        <option value="openrouter">OpenRouter</option>
+        <option value="custom">Custom (OpenAI-compatible)</option>
+      </select>
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">API Key</div>
+      <input class="sdpi-item-value" type="password" id="apiKey" placeholder="sk-...">
+      <div class="help-text">Your API key is stored securely in Stream Deck settings.</div>
+    </div>
+
+    <div class="sdpi-item" id="baseUrlGroup" style="display: none;">
+      <div class="sdpi-item-label">Base URL</div>
+      <input class="sdpi-item-value" type="text" id="baseUrl" placeholder="https://api.openai.com/v1">
+      <div class="help-text">Custom API endpoint (e.g., for local Ollama or proxy).</div>
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Model</div>
+      <input class="sdpi-item-value" type="text" id="model" placeholder="gpt-4o">
+      <div class="help-text">Examples: gpt-4o, gpt-3.5-turbo, claude-3-5-sonnet-20241022</div>
+    </div>
+
+    <div class="sdpi-heading">Model Parameters</div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Temperature</div>
+      <input class="sdpi-item-value" type="range" id="temperature" min="0" max="2" step="0.1" value="0.7">
+      <div class="range-value" id="temperatureValue">0.7</div>
+      <div class="help-text">Higher = more creative, Lower = more focused</div>
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Max Tokens</div>
+      <input class="sdpi-item-value" type="number" id="maxTokens" min="100" max="32000" value="4096">
+      <div class="help-text">Maximum response length</div>
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Timeout (seconds)</div>
+      <input class="sdpi-item-value" type="number" id="timeout" min="5" max="120" value="30">
+    </div>
+
+    <div class="sdpi-heading">Connection Test</div>
+
+    <div class="sdpi-item">
+      <button class="sdpi-item-value" id="testConnection">Test Connection</button>
+      <span id="connectionStatus" class="status-indicator status-unknown"></span>
+      <span id="connectionText">Not tested</span>
+    </div>
+
+    <div class="sdpi-heading">Quick Models</div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">OpenAI</div>
+      <div class="sdpi-item-value">
+        <button class="model-btn" data-model="o3-mini">o3-mini</button>
+        <button class="model-btn" data-model="o1-mini">o1-mini</button>
+        <button class="model-btn" data-model="gpt-4o">GPT-4o</button>
+      </div>
+    </div>
+
+    <div class="sdpi-item">
+      <div class="sdpi-item-label">Anthropic</div>
+      <div class="sdpi-item-value">
+        <button class="model-btn" data-model="claude-3-7-sonnet-latest">Claude 3.7 Sonnet</button>
+        <button class="model-btn" data-model="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/global-settings.js"></script>
+</body>
+
+</html>

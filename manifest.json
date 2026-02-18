@@ -1,0 +1,64 @@
+{
+  "UUID": "com.dzarlax.ai-assistant",
+  "Name": "AI Assistant",
+  "Version": "1.0.0.0",
+  "Author": "dzarlax",
+  "Description": "AI-powered text processing",
+  "Icon": "imgs/pluginIcon",
+  "URL": "https://github.com/dzarlax/streamdeck-ai-plugin",
+  "Category": "AI Assistant",
+  "CategoryIcon": "imgs/categoryIcon",
+  "CodePath": "bin/plugin.js",
+  "CodePathMac": "bin/plugin.js",
+  "CodePathWin": "bin/plugin.js",
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
+  "SDKVersion": 2,
+  "Software": {
+    "MinimumVersion": "6.6"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.15"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Actions": [
+    {
+      "Icon": "imgs/actionIcon",
+      "Name": "AI Text Action",
+      "States": [
+        {
+          "Image": "imgs/actionIdle",
+          "TitleAlignment": "middle",
+          "FontSize": 12
+        },
+        {
+          "Image": "imgs/actionProcessing",
+          "TitleAlignment": "middle",
+          "FontSize": 12
+        },
+        {
+          "Image": "imgs/actionSuccess",
+          "TitleAlignment": "middle",
+          "FontSize": 12
+        },
+        {
+          "Image": "imgs/actionError",
+          "TitleAlignment": "middle",
+          "FontSize": 12
+        }
+      ],
+      "SupportedInMultiActions": true,
+      "Tooltip": "Process text with AI",
+      "UUID": "com.dzarlax.ai-assistant.text-action",
+      "PropertyInspectorPath": "ui/index.html"
+    }
+  ]
+}
