@@ -53,6 +53,18 @@ const PRESETS = {
   }
 };
 
+// Default encoder preset configuration
+const DEFAULT_ENCODER_PRESETS = [
+  { key: 'fix-grammar', enabled: true },
+  { key: 'translate-en', enabled: true },
+  { key: 'translate-ru', enabled: true },
+  { key: 'translate-sr', enabled: true },
+  { key: 'summarize', enabled: true },
+  { key: 'explain-code', enabled: true },
+  { key: 'professional', enabled: true },
+  { key: 'casual', enabled: true }
+];
+
 const FALLBACK_MODELS = {
   openai: [
     { id: 'gpt-4o', name: 'GPT-4o' },
@@ -103,12 +115,27 @@ let actionSettings = {
   postAction: 'paste'
 };
 
+let encoderSettings = {
+  presetIndex: 0,
+  encoderPresets: DEFAULT_ENCODER_PRESETS
+};
+
 let websocket = null;
 let uuid = null;
+let actionType = null; // 'text-action' or 'prompt-selector'
 
 function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, inActionInfo) {
   uuid = inUUID;
   websocket = new WebSocket('ws://localhost:' + inPort);
+
+  // Parse action info to determine action type
+  try {
+    const actionInfo = JSON.parse(inActionInfo);
+    // action is full UUID like "com.dzarlax.ai-assistant.prompt-selector"
+    actionType = actionInfo.action.includes('prompt-selector') ? 'prompt-selector' : 'text-action';
+  } catch (e) {
+    actionType = 'text-action'; // fallback
+  }
 
   websocket.onopen = () => {
     websocket.send(JSON.stringify({ event: inRegisterEvent, uuid: uuid }));
@@ -120,8 +147,14 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
     const data = JSON.parse(evt.data);
 
     if (data.event === 'didReceiveSettings' && data.payload.settings) {
-      actionSettings = { ...actionSettings, ...data.payload.settings };
-      updateActionUI();
+      if (actionType === 'prompt-selector') {
+        encoderSettings = { ...encoderSettings, ...data.payload.settings };
+        showActionSections();
+        updateEncoderUI();
+      } else {
+        actionSettings = { ...actionSettings, ...data.payload.settings };
+        updateActionUI();
+      }
     }
 
     if (data.event === 'didReceiveGlobalSettings') {
@@ -132,6 +165,9 @@ function connectElgatoStreamDeckSocket(inPort, inUUID, inRegisterEvent, inInfo, 
       }
     }
   };
+
+  // Show/hide sections based on action type
+  showActionSections();
 }
 
 // --- Model fetching ---
@@ -341,6 +377,132 @@ function loadPreset(key) {
   saveActionSettings();
 }
 
+// --- Encoder Preset Configuration ---
+
+function showActionSections() {
+  const isEncoder = actionType === 'prompt-selector';
+  const setDisplay = (id, display) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = display;
+  };
+
+  // Hide entire Prompt Settings and Quick Presets blocks for encoder (heading + content)
+  setDisplay('promptBlock', isEncoder ? 'none' : 'block');
+  setDisplay('presetBlock', isEncoder ? 'none' : 'block');
+  setDisplay('encoderSection', isEncoder ? 'block' : 'none');
+  setDisplay('divider1', isEncoder ? 'none' : 'block');
+  setDisplay('divider2', isEncoder ? 'none' : 'block');
+}
+
+function updateEncoderUI() {
+  renderPresetList();
+}
+
+function renderPresetList() {
+  const container = document.getElementById('presetList');
+  container.innerHTML = '';
+
+  const presets = encoderSettings.encoderPresets || DEFAULT_ENCODER_PRESETS;
+
+  presets.forEach((preset, index) => {
+    const presetInfo = PRESETS[preset.key];
+    if (!presetInfo) return;
+
+    const item = document.createElement('div');
+    item.className = 'preset-item' + (preset.enabled ? '' : ' disabled');
+    item.draggable = true;
+    item.dataset.index = index;
+
+    item.innerHTML = `
+      <span class="preset-drag">⋮⋮</span>
+      <input type="checkbox" class="preset-toggle" ${preset.enabled ? 'checked' : ''} data-key="${preset.key}">
+      <span class="preset-name">${presetInfo.actionName}</span>
+    `;
+
+    // Drag events
+    item.addEventListener('dragstart', handleDragStart);
+    item.addEventListener('dragend', handleDragEnd);
+    item.addEventListener('dragover', handleDragOver);
+    item.addEventListener('drop', handleDrop);
+    item.addEventListener('dragleave', handleDragLeave);
+
+    // Toggle event
+    const checkbox = item.querySelector('.preset-toggle');
+    checkbox.addEventListener('change', (e) => {
+      const key = e.target.dataset.key;
+      const idx = encoderSettings.encoderPresets.findIndex(p => p.key === key);
+      if (idx !== -1) {
+        encoderSettings.encoderPresets[idx].enabled = e.target.checked;
+        item.className = 'preset-item' + (e.target.checked ? '' : ' disabled');
+        saveEncoderSettings();
+      }
+    });
+
+    container.appendChild(item);
+  });
+}
+
+let draggedItem = null;
+
+function handleDragStart(e) {
+  draggedItem = this;
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+  document.querySelectorAll('.preset-item').forEach(item => {
+    item.classList.remove('drag-over');
+  });
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  this.classList.add('drag-over');
+}
+
+function handleDragLeave(e) {
+  this.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  this.classList.remove('drag-over');
+
+  if (draggedItem === this) return;
+
+  const fromIndex = parseInt(draggedItem.dataset.index);
+  const toIndex = parseInt(this.dataset.index);
+
+  if (fromIndex !== toIndex) {
+    const presets = encoderSettings.encoderPresets;
+    const [removed] = presets.splice(fromIndex, 1);
+    presets.splice(toIndex, 0, removed);
+
+    saveEncoderSettings();
+    renderPresetList();
+  }
+}
+
+function saveEncoderSettings() {
+  if (websocket) {
+    websocket.send(JSON.stringify({
+      event: 'setSettings',
+      context: uuid,
+      payload: encoderSettings
+    }));
+  }
+}
+
+function resetEncoderPresets() {
+  encoderSettings.encoderPresets = JSON.parse(JSON.stringify(DEFAULT_ENCODER_PRESETS));
+  encoderSettings.presetIndex = 0;
+  saveEncoderSettings();
+  renderPresetList();
+}
+
 // --- Event listeners ---
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -388,4 +550,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const key = document.getElementById('presetSelector').value;
     if (key) loadPreset(key);
   });
+
+  // Encoder reset button
+  document.getElementById('resetPresetsBtn').addEventListener('click', resetEncoderPresets);
 });

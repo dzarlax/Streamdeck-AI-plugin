@@ -44,8 +44,15 @@ interface ActionSettings extends JsonObject {
   postAction?: 'paste' | 'copy';
 }
 
+interface EncoderPresetConfig extends JsonObject {
+  key?: string;
+  enabled?: boolean;
+  order?: number;
+}
+
 interface EncoderSettings extends JsonObject {
   presetIndex?: number;
+  encoderPresets?: EncoderPresetConfig[];
 }
 
 const PRESETS = [
@@ -211,24 +218,57 @@ class AITextAction extends SingletonAction<ActionSettings> {
 class PromptSelectorAction extends SingletonAction<EncoderSettings> {
 
   private presetIndices = new Map<string, number>();
+  private encoderSettings = new Map<string, EncoderSettings>();
 
-  private getIndex(contextId: string): number {
-    return this.presetIndices.get(contextId) ?? 0;
+  private getActivePresets(settings: EncoderSettings): typeof PRESETS {
+    if (!settings.encoderPresets || settings.encoderPresets.length === 0) {
+      return PRESETS;
+    }
+
+    return settings.encoderPresets
+      .filter(p => p.enabled)
+      .map(p => PRESETS.find(preset => preset.key === p.key))
+      .filter((p): p is typeof PRESETS[0] => p !== undefined);
   }
 
-  private setIndex(contextId: string, index: number): void {
-    const wrapped = ((index % PRESETS.length) + PRESETS.length) % PRESETS.length;
-    this.presetIndices.set(contextId, wrapped);
+  private getIndex(contextId: string, presetsLength: number): number {
+    const idx = this.presetIndices.get(contextId) ?? 0;
+    if (presetsLength === 0) return 0;
+    return ((idx % presetsLength) + presetsLength) % presetsLength;
   }
 
-  private async updateDisplay(ev: { action: any }, contextId: string, opts?: { value?: string; indicator?: number }): Promise<void> {
-    const index = this.getIndex(contextId);
-    const preset = PRESETS[index];
+  private setIndex(contextId: string, index: number, presetsLength: number): void {
+    if (presetsLength === 0) {
+      this.presetIndices.set(contextId, 0);
+    } else {
+      const wrapped = ((index % presetsLength) + presetsLength) % presetsLength;
+      this.presetIndices.set(contextId, wrapped);
+    }
+  }
+
+  private async updateDisplay(ev: { action: any }, contextId: string, settings: EncoderSettings, opts?: { value?: string; indicator?: number }): Promise<void> {
+    const activePresets = this.getActivePresets(settings);
+    const index = this.getIndex(contextId, activePresets.length);
+    const preset = activePresets[index];
+
+    if (!preset) {
+      try {
+        await ev.action.setFeedback({
+          title: 'No Presets',
+          value: 'Configure in settings',
+          indicator: 0
+        });
+      } catch (e: any) {
+        log(`setFeedback error: ${e.message}`);
+      }
+      return;
+    }
+
     try {
       await ev.action.setFeedback({
         title: preset.name,
-        value: opts?.value ?? `${index + 1}/${PRESETS.length}`,
-        indicator: opts?.indicator ?? Math.round(((index + 1) / PRESETS.length) * 100)
+        value: opts?.value ?? `${index + 1}/${activePresets.length}`,
+        indicator: opts?.indicator ?? Math.round(((index + 1) / activePresets.length) * 100)
       });
     } catch (e: any) {
       log(`setFeedback error: ${e.message}`);
@@ -237,31 +277,51 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
 
   override async onWillAppear(ev: WillAppearEvent<EncoderSettings>): Promise<void> {
     const contextId = ev.action.id;
-    const saved = ev.payload.settings.presetIndex;
-    if (saved !== undefined && saved >= 0 && saved < PRESETS.length) {
+    const settings = ev.payload.settings;
+
+    this.encoderSettings.set(contextId, settings);
+
+    const saved = settings.presetIndex;
+    const activePresets = this.getActivePresets(settings);
+
+    if (saved !== undefined && saved >= 0 && saved < activePresets.length) {
       this.presetIndices.set(contextId, saved);
     }
+
     if (ev.action.isDial()) {
-      await this.updateDisplay(ev, contextId);
+      await this.updateDisplay(ev, contextId, settings);
     }
   }
 
   override async onDialRotate(ev: DialRotateEvent<EncoderSettings>): Promise<void> {
     const contextId = ev.action.id;
-    const current = this.getIndex(contextId);
-    this.setIndex(contextId, current + ev.payload.ticks);
+    const settings = ev.payload.settings;
+    this.encoderSettings.set(contextId, settings);
 
-    const newIndex = this.getIndex(contextId);
-    await ev.action.setSettings({ presetIndex: newIndex });
-    await this.updateDisplay(ev, contextId);
+    const activePresets = this.getActivePresets(settings);
+    const current = this.getIndex(contextId, activePresets.length);
+    this.setIndex(contextId, current + ev.payload.ticks, activePresets.length);
 
-    log(`Dial rotated: preset ${newIndex} (${PRESETS[newIndex].name})`);
+    const newIndex = this.getIndex(contextId, activePresets.length);
+    await ev.action.setSettings({ ...settings, presetIndex: newIndex });
+    await this.updateDisplay(ev, contextId, settings);
+
+    const preset = activePresets[newIndex];
+    log(`Dial rotated: preset ${newIndex} (${preset?.name ?? 'none'})`);
   }
 
   override async onDialDown(ev: DialDownEvent<EncoderSettings>): Promise<void> {
     const contextId = ev.action.id;
-    const index = this.getIndex(contextId);
-    const preset = PRESETS[index];
+    const settings = ev.payload.settings;
+    const activePresets = this.getActivePresets(settings);
+    const index = this.getIndex(contextId, activePresets.length);
+    const preset = activePresets[index];
+
+    if (!preset) {
+      log('Dial pressed: no active presets');
+      await ev.action.showAlert();
+      return;
+    }
 
     log(`Dial pressed: executing preset "${preset.name}"`);
 
@@ -287,7 +347,7 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
       log(`Encoder action completed: ${preset.name}`);
 
       setTimeout(() => {
-        this.updateDisplay(ev, contextId).catch(() => { });
+        this.updateDisplay(ev, contextId, settings).catch(() => { });
       }, 1500);
 
     } catch (error: any) {
@@ -300,15 +360,23 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
       await ev.action.showAlert();
 
       setTimeout(() => {
-        this.updateDisplay(ev, contextId).catch(() => { });
+        this.updateDisplay(ev, contextId, settings).catch(() => { });
       }, 3000);
     }
   }
 
   override async onTouchTap(ev: TouchTapEvent<EncoderSettings>): Promise<void> {
     const contextId = ev.action.id;
-    const index = this.getIndex(contextId);
-    const preset = PRESETS[index];
+    const settings = ev.payload.settings;
+    const activePresets = this.getActivePresets(settings);
+    const index = this.getIndex(contextId, activePresets.length);
+    const preset = activePresets[index];
+
+    if (!preset) {
+      log('Touch tap: no active presets');
+      await ev.action.showAlert();
+      return;
+    }
 
     log(`Touch tap: executing preset "${preset.name}"`);
 
@@ -334,7 +402,7 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
       log(`Touch action completed: ${preset.name}`);
 
       setTimeout(() => {
-        this.updateDisplay(ev, contextId).catch(() => { });
+        this.updateDisplay(ev, contextId, settings).catch(() => { });
       }, 1500);
 
     } catch (error: any) {
@@ -347,7 +415,7 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
       await ev.action.showAlert();
 
       setTimeout(() => {
-        this.updateDisplay(ev, contextId).catch(() => { });
+        this.updateDisplay(ev, contextId, settings).catch(() => { });
       }, 3000);
     }
   }

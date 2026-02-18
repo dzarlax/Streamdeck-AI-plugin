@@ -3,7 +3,7 @@
   "Name": "AI Assistant",
   "Version": "1.0.0.0",
   "Author": "dzarlax",
-  "Description": "AI-powered text processing",
+  "Description": "AI-powered text processing with OpenAI, Anthropic Claude, Google Gemini, OpenRouter, or custom endpoints. Includes 8 built-in presets: Fix Grammar, Translate (EN/RU/SR), Summarize, Explain Code, Professional, and Casual tone rewrites.",
   "Icon": "imgs/pluginIcon",
   "URL": "https://github.com/dzarlax/streamdeck-ai-plugin",
   "Category": "AI Assistant",
@@ -63,7 +63,7 @@
     {
       "UUID": "com.dzarlax.ai-assistant.prompt-selector",
       "Name": "AI Prompt Selector",
-      "Icon": "imgs/actionIcon",
+      "Icon": "imgs/encoderIdle",
       "Controllers": ["Encoder"],
       "Encoder": {
         "Icon": "imgs/encoderIdle",
@@ -76,11 +76,12 @@
       },
       "States": [
         {
-          "Image": "imgs/actionIdle"
+          "Image": "imgs/encoderIdle"
         }
       ],
       "Tooltip": "Rotate to select prompt, press to execute",
-      "SupportedInMultiActions": false
+      "SupportedInMultiActions": false,
+      "PropertyInspectorPath": "ui/index.html"
     }
   ]
 }

@@ -138,6 +138,56 @@
       margin-left: 4px;
       font-size: 11px;
     }
+
+    /* Drag & Drop Presets */
+    .preset-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .preset-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: grab;
+      transition: all 0.15s;
+    }
+
+    .preset-item:active { cursor: grabbing; }
+    .preset-item.dragging { opacity: 0.5; border-color: var(--accent); }
+    .preset-item.drag-over { border-color: var(--accent); background: rgba(150, 215, 255, 0.1); }
+
+    .preset-item.disabled { opacity: 0.4; }
+    .preset-item.disabled .preset-toggle { opacity: 0.5; }
+
+    .preset-drag {
+      color: var(--text-muted);
+      font-size: 12px;
+      cursor: grab;
+    }
+
+    .preset-toggle {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    .preset-name {
+      flex: 1;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .preset-item.disabled .preset-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
   </style>
 </head>
 <body>
@@ -201,11 +251,12 @@
       </div>
     </div>
 
-    <div class="divider"></div>
+    <div id="divider1" class="divider"></div>
 
-    <!-- Prompt Settings -->
-    <div class="sdpi-heading" onclick="toggleSection('promptSection')">Prompt Settings</div>
-    <div id="promptSection" class="section-content">
+    <!-- Prompt Settings (hidden for Encoder / Prompt Selector) -->
+    <div id="promptBlock">
+      <div class="sdpi-heading" onclick="toggleSection('promptSection')">Prompt Settings</div>
+      <div id="promptSection" class="section-content">
 
       <div class="sdpi-item">
         <div class="sdpi-item-label">Action Name</div>
@@ -244,12 +295,14 @@
         </select>
       </div>
     </div>
+    </div>
 
-    <div class="divider"></div>
+    <div id="divider2" class="divider"></div>
 
-    <!-- Presets -->
-    <div class="sdpi-heading" onclick="toggleSection('presetSection')">Quick Presets</div>
-    <div id="presetSection" class="section-content">
+    <!-- Quick Presets (hidden for Encoder / Prompt Selector) -->
+    <div id="presetBlock">
+      <div class="sdpi-heading" onclick="toggleSection('presetSection')">Quick Presets</div>
+      <div id="presetSection" class="section-content">
 
       <div class="sdpi-item">
         <div class="sdpi-item-label">Preset</div>
@@ -269,6 +322,23 @@
       <div class="sdpi-item">
         <div class="sdpi-item-label"></div>
         <button class="sdpi-item-value btn btn-block" id="loadPresetBtn">Apply Preset</button>
+      </div>
+    </div>
+    </div>
+
+    <!-- Encoder Preset Configuration (shown only for Prompt Selector) -->
+    <div id="encoderSection" style="display: none;">
+      <div class="sdpi-heading">Encoder Presets</div>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label">Configure</div>
+        <div class="sdpi-item-value">
+          <p class="help-text" style="margin-bottom: 8px;">Drag to reorder. Uncheck to hide from encoder.</p>
+          <div class="preset-list" id="presetList"></div>
+        </div>
+      </div>
+      <div class="sdpi-item">
+        <div class="sdpi-item-label"></div>
+        <button class="sdpi-item-value btn btn-block" id="resetPresetsBtn">Reset to Defaults</button>
       </div>
     </div>
 
