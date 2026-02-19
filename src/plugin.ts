@@ -20,10 +20,10 @@ import {
 import * as fs from 'fs';
 
 const log = (msg: string) => {
+  streamDeck.logger.info(msg);
   try {
     fs.appendFileSync('/tmp/ai-plugin.log', `[${new Date().toISOString()}] ${msg}\n`);
-    streamDeck.logger.info(msg);
-  } catch (e) { }
+  } catch (_) { /* /tmp may be unwritable when debug is off */ }
 };
 
 interface GlobalSettings extends JsonObject {
@@ -81,6 +81,13 @@ const PRESETS = [
     key: 'translate-sr',
     name: 'Translate SR',
     systemPrompt: 'You are a professional translator. Translate the following text to Serbian. Preserve the tone and style. Output ONLY the translated text.',
+    userPromptTemplate: '{{text}}',
+    postAction: 'paste' as const
+  },
+  {
+    key: 'translate-de',
+    name: 'Translate DE',
+    systemPrompt: 'You are a professional translator. Translate the following text to German. Preserve the tone and style. Output ONLY the translated text.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
@@ -289,6 +296,12 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
     }
 
     if (ev.action.isDial()) {
+      // Set layout explicitly so feedback (title/value/indicator) is shown when debug is off.
+      try {
+        await ev.action.setFeedbackLayout('$B1');
+      } catch (e: any) {
+        log(`setFeedbackLayout error: ${e.message}`);
+      }
       await this.updateDisplay(ev, contextId, settings);
     }
   }

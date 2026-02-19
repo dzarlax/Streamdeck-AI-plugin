@@ -5,12 +5,15 @@ import json from "@rollup/plugin-json";
 import * as fs from "fs";
 
 export default {
-  input: "src/main.ts",
+  input: {
+    launcher: "src/launcher.ts",
+    main: "src/main.ts"
+  },
   output: {
     dir: "com.dzarlax.ai-assistant.sdPlugin/bin",
     format: "esm",
     preserveModules: false,
-    entryFileNames: "plugin.js",
+    entryFileNames: "[name].js",
     sourcemap: true
   },
   plugins: [
@@ -35,6 +38,7 @@ export default {
           `${dest}/imgs`,
           `${dest}/ui`,
           `${dest}/ui/js`,
+          `${dest}/ui/css`,
           `${dest}/bin`
         ];
         dirs.forEach(dir => {
@@ -67,6 +71,15 @@ export default {
               const jsFiles = fs.readdirSync("property-inspector/js");
               for (const jsFile of jsFiles) {
                 fs.copyFileSync(`property-inspector/js/${jsFile}`, `${dest}/ui/js/${jsFile}`);
+              }
+            } else if (file === "css") {
+              // Ensure css directory exists
+              if (!fs.existsSync(`${dest}/ui/css`)) {
+                fs.mkdirSync(`${dest}/ui/css`, { recursive: true });
+              }
+              const cssFiles = fs.readdirSync("property-inspector/css");
+              for (const cssFile of cssFiles) {
+                fs.copyFileSync(`property-inspector/css/${cssFile}`, `${dest}/ui/css/${cssFile}`);
               }
             } else {
               fs.copyFileSync(`property-inspector/${file}`, `${dest}/ui/${file}`);

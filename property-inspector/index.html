@@ -4,194 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Assistant Settings</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/GeekyEggo/SDPI@main/dist/css/sdpi.css">
-  <style>
-    :root {
-      --accent: #96d7ff;
-      --bg: #1e1e1e;
-      --bg-input: #2a2a2a;
-      --border: #3a3a3a;
-      --text: #d8d8d8;
-      --text-muted: #777;
-    }
-
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-    }
-
-    .sdpi-wrapper {
-      padding: 12px;
-    }
-
-    .sdpi-heading {
-      color: var(--accent);
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 8px;
-      margin-top: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-      transition: opacity 0.2s;
-    }
-
-    .sdpi-heading:hover { opacity: 0.8; }
-    .sdpi-heading::before { content: "\25BC "; font-size: 10px; }
-    .sdpi-heading.collapsed::before { content: "\25B6 "; }
-
-    .sdpi-item-label {
-      color: #a0a0a0 !important;
-    }
-
-    input[type="text"],
-    input[type="password"],
-    input[type="number"],
-    textarea,
-    select {
-      color: #e0e0e0 !important;
-      background-color: var(--bg-input) !important;
-      border: 1px solid var(--border) !important;
-    }
-
-    input:focus, textarea:focus, select:focus {
-      border-color: var(--accent) !important;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 80px;
-      font-family: 'SF Mono', Monaco, monospace;
-      font-size: 12px;
-    }
-
-    .help-text {
-      font-size: 10px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .section-content.collapsed {
-      display: none;
-    }
-
-    .model-row {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .model-row select { flex: 1; }
-
-    .btn {
-      background: linear-gradient(135deg, #4a9eff 0%, #2d7dd2 100%) !important;
-      border: none !important;
-      color: white !important;
-      font-weight: 500;
-      cursor: pointer;
-      padding: 4px 12px;
-      border-radius: 3px;
-      font-size: 12px;
-      white-space: nowrap;
-      transition: opacity 0.15s;
-    }
-
-    .btn:hover { opacity: 0.85; }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-    .btn-block {
-      display: block;
-      width: 100%;
-      padding: 6px 12px;
-    }
-
-    input[type="range"] {
-      -webkit-appearance: none;
-      background: var(--border) !important;
-      border-radius: 4px;
-      height: 6px;
-    }
-
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      width: 14px;
-      height: 14px;
-      background: var(--accent);
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    .temp-value {
-      color: var(--accent);
-      font-weight: 500;
-      min-width: 30px;
-      display: inline-block;
-    }
-
-    .divider {
-      height: 1px;
-      background: var(--border);
-      margin: 16px 0;
-    }
-
-    .unit {
-      color: var(--text-muted);
-      margin-left: 4px;
-      font-size: 11px;
-    }
-
-    /* Drag & Drop Presets */
-    .preset-list {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .preset-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 8px;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      cursor: grab;
-      transition: all 0.15s;
-    }
-
-    .preset-item:active { cursor: grabbing; }
-    .preset-item.dragging { opacity: 0.5; border-color: var(--accent); }
-    .preset-item.drag-over { border-color: var(--accent); background: rgba(150, 215, 255, 0.1); }
-
-    .preset-item.disabled { opacity: 0.4; }
-    .preset-item.disabled .preset-toggle { opacity: 0.5; }
-
-    .preset-drag {
-      color: var(--text-muted);
-      font-size: 12px;
-      cursor: grab;
-    }
-
-    .preset-toggle {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-      accent-color: var(--accent);
-    }
-
-    .preset-name {
-      flex: 1;
-      font-size: 12px;
-      color: var(--text);
-    }
-
-    .preset-item.disabled .preset-name {
-      text-decoration: line-through;
-      color: var(--text-muted);
-    }
-  </style>
+  <link rel="stylesheet" href="css/sdpi.css">
 </head>
 <body>
   <div class="sdpi-wrapper">
+
+    <!-- Privacy Notice -->
+    <div class="sdpi-item" style="padding: 8px; background: rgba(255, 152, 0, 0.1); border-radius: 4px; margin-bottom: 8px;">
+      <div class="help-text" style="color: #ffb74d; font-size: 11px;">
+        Your text will be sent to the selected AI provider's API. See <a href="https://github.com/dzarlax/streamdeck-ai-plugin/blob/main/PRIVACY.md" style="color: #64b5f6;">Privacy Policy</a>.
+      </div>
+    </div>
 
     <!-- API Configuration -->
     <div class="sdpi-heading" onclick="toggleSection('apiSection')">API Configuration</div>
@@ -312,6 +135,7 @@
           <option value="translate-en">Translate to English</option>
           <option value="translate-ru">Translate to Russian</option>
           <option value="translate-sr">Translate to Serbian</option>
+          <option value="translate-de">Translate to German</option>
           <option value="summarize">Summarize</option>
           <option value="explain-code">Explain Code</option>
           <option value="professional">Make Professional</option>

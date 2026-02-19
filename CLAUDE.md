@@ -67,12 +67,12 @@ Encoder/dial action for quick preset switching.
 
 **LCD Display:**
 - `title` - Preset name
-- `value` - Position (e.g., "3/8") or status
+- `value` - Position (e.g., "3/9") or status
 - `indicator` - Visual progress bar
 
 ---
 
-## Built-in Presets (8 total)
+## Built-in Presets (9 total)
 
 | # | Key | Name | Post Action |
 |---|-----|------|-------------|
@@ -80,12 +80,78 @@ Encoder/dial action for quick preset switching.
 | 2 | translate-en | Translate EN | paste |
 | 3 | translate-ru | Translate RU | paste |
 | 4 | translate-sr | Translate SR | paste |
-| 5 | summarize | Summarize | copy |
-| 6 | explain-code | Explain Code | copy |
-| 7 | professional | Professional | paste |
-| 8 | casual | Casual | paste |
+| 5 | translate-de | Translate DE | paste |
+| 6 | summarize | Summarize | copy |
+| 7 | explain-code | Explain Code | copy |
+| 8 | professional | Professional | paste |
+| 9 | casual | Casual | paste |
 
 Presets are defined in `src/plugin.ts` as `PRESETS` array.
+
+---
+
+## Adding New Presets
+
+### Step 1: Add to `src/plugin.ts`
+
+Add a new object to the `PRESETS` array:
+
+```typescript
+const PRESETS = [
+  // ... existing presets ...
+  {
+    key: 'my-new-preset',           // Unique identifier (kebab-case)
+    name: 'My New Preset',          // Display name (shown on encoder LCD)
+    systemPrompt: 'You are a helpful assistant that...',  // AI system instructions
+    userPromptTemplate: '{{text}}', // User prompt ({{text}} = captured text)
+    postAction: 'paste' as const    // 'paste' or 'copy'
+  }
+];
+```
+
+### Step 2: Add to Property Inspector UI
+
+Edit `property-inspector/index.html` - add option to the preset selector:
+
+```html
+<select class="sdpi-item-value select" id="presetSelector">
+  <!-- ... existing options ... -->
+  <option value="my-new-preset">My New Preset</option>
+</select>
+```
+
+### Step 3: Add to Property Inspector JS
+
+Edit `property-inspector/js/property-inspector.js` - add preset to `PRESETS` object:
+
+```javascript
+const PRESETS = {
+  // ... existing presets ...
+  'my-new-preset': {
+    name: 'My New Preset',
+    systemPrompt: 'You are a helpful assistant that...',
+    userPromptTemplate: '{{text}}',
+    postAction: 'paste'
+  }
+};
+```
+
+### Step 4: Rebuild
+
+```bash
+npm run build
+streamdeck restart com.dzarlax.ai-assistant
+```
+
+### Preset Fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `key` | string | Unique identifier, used in settings |
+| `name` | string | Display name on encoder LCD |
+| `systemPrompt` | string | AI system instructions |
+| `userPromptTemplate` | string | Prompt template, use `{{text}}` for captured content |
+| `postAction` | 'paste' \| 'copy' | What to do with result |
 
 ---
 
@@ -113,7 +179,7 @@ Presets are defined in `src/plugin.ts` as `PRESETS` array.
 ### Encoder Settings (Prompt Selector)
 | Setting | Type | Description |
 |---------|------|-------------|
-| presetIndex | number | Current preset index (0-7) |
+| presetIndex | number | Current preset index (0-8) |
 
 ---
 
@@ -153,8 +219,8 @@ Both actions use shared `processWithAI()` function:
 ```typescript
 await action.setFeedback({
   title: preset.name,
-  value: `${index + 1}/8`,
-  indicator: Math.round(((index + 1) / 8) * 100)
+  value: `${index + 1}/9`,
+  indicator: Math.round(((index + 1) / 9) * 100)
 });
 ```
 

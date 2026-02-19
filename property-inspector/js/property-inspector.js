@@ -27,6 +27,12 @@ const PRESETS = {
     userPromptTemplate: '{{text}}',
     postAction: 'paste'
   },
+  'translate-de': {
+    actionName: 'Translate DE',
+    systemPrompt: 'You are a professional translator. Translate the following text to German. Preserve the tone and style. Output ONLY the translated text.',
+    userPromptTemplate: '{{text}}',
+    postAction: 'paste'
+  },
   'summarize': {
     actionName: 'Summarize',
     systemPrompt: 'You are an expert at summarization. Summarize the following content concisely in 3-5 bullet points. Use clear, simple language.',
@@ -59,6 +65,7 @@ const DEFAULT_ENCODER_PRESETS = [
   { key: 'translate-en', enabled: true },
   { key: 'translate-ru', enabled: true },
   { key: 'translate-sr', enabled: true },
+  { key: 'translate-de', enabled: true },
   { key: 'summarize', enabled: true },
   { key: 'explain-code', enabled: true },
   { key: 'professional', enabled: true },

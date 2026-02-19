@@ -5,6 +5,11 @@ const execAsync = promisify(exec);
 
 export const isMac = process.platform === 'darwin';
 
+// Use full paths so plugin works when Stream Deck runs with limited PATH (e.g. release mode).
+const PBCOPY = '/usr/bin/pbcopy';
+const PBPASTE = '/usr/bin/pbpaste';
+const OSASCRIPT = '/usr/bin/osascript';
+
 const UTF8_ENV = { ...process.env, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' };
 
 /**
@@ -14,7 +19,7 @@ const UTF8_ENV = { ...process.env, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' };
 export async function copyToClipboard(text: string): Promise<void> {
     if (isMac) {
         return new Promise((resolve, reject) => {
-            const proc = spawn('pbcopy', [], { env: UTF8_ENV });
+            const proc = spawn(PBCOPY, [], { env: UTF8_ENV });
             proc.on('close', (code) => {
                 if (code === 0) resolve();
                 else reject(new Error(`pbcopy exited with code ${code}`));
@@ -36,7 +41,7 @@ export async function copyToClipboard(text: string): Promise<void> {
  */
 export async function pasteFromClipboard(): Promise<string> {
     if (isMac) {
-        const { stdout } = await execAsync('pbpaste', {
+        const { stdout } = await execAsync(PBPASTE, {
             encoding: 'utf8',
             env: UTF8_ENV,
             maxBuffer: 10 * 1024 * 1024
@@ -57,7 +62,7 @@ export async function pasteFromClipboard(): Promise<string> {
 export async function simulateCopy(): Promise<void> {
     if (isMac) {
         // key code 8 = "c" on US layout, works regardless of active input method
-        await execAsync(`osascript -e 'tell application "System Events" to key code 8 using {command down}'`);
+        await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 8 using {command down}'`);
     } else {
         await execAsync(`powershell -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^c')"`);
     }
@@ -71,7 +76,7 @@ export async function simulateCopy(): Promise<void> {
 export async function simulatePaste(): Promise<void> {
     if (isMac) {
         // key code 9 = "v" on US layout, works regardless of active input method
-        await execAsync(`osascript -e 'tell application "System Events" to key code 9 using {command down}'`);
+        await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 9 using {command down}'`);
     } else {
         await execAsync(`powershell -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^v')"`);
     }

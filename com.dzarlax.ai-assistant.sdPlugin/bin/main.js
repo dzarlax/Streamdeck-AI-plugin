@@ -1,6 +1,3 @@
-#!/usr/bin/env node
-import * as fs from 'fs';
-import fs__default from 'fs';
 import require$$0$3, { EventEmitter as EventEmitter$1 } from 'events';
 import require$$1$1 from 'https';
 import require$$1$2 from 'http';
@@ -15,7 +12,9 @@ import path, { join } from 'node:path';
 import { cwd } from 'node:process';
 import fs$1, { existsSync, readFileSync } from 'node:fs';
 import require$$1$3, { promisify } from 'util';
-import require$$1$4 from 'path';
+import path$1 from 'path';
+import * as fs from 'fs';
+import fs__default from 'fs';
 import http2 from 'http2';
 import require$$4$1 from 'assert';
 import require$$0$4 from 'tty';
@@ -20307,7 +20306,7 @@ function requireMimeTypes () {
 		 */
 
 		var db = requireMimeDb();
-		var extname = require$$1$4.extname;
+		var extname = path$1.extname;
 
 		/**
 		 * Module variables.
@@ -22048,7 +22047,7 @@ function requireForm_data () {
 
 	var CombinedStream = requireCombined_stream();
 	var util = require$$1$3;
-	var path = require$$1$4;
+	var path = path$1;
 	var http = require$$1$2;
 	var https = require$$1$1;
 	var parseUrl = require$$0$2.parse;
@@ -28666,6 +28665,10 @@ async function callAI(systemPrompt, userPrompt, config) {
 
 const execAsync = promisify(exec);
 const isMac = process.platform === 'darwin';
+// Use full paths so plugin works when Stream Deck runs with limited PATH (e.g. release mode).
+const PBCOPY = '/usr/bin/pbcopy';
+const PBPASTE = '/usr/bin/pbpaste';
+const OSASCRIPT = '/usr/bin/osascript';
 const UTF8_ENV = { ...process.env, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' };
 /**
  * Copies text to the system clipboard.
@@ -28674,7 +28677,7 @@ const UTF8_ENV = { ...process.env, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' };
 async function copyToClipboard(text) {
     if (isMac) {
         return new Promise((resolve, reject) => {
-            const proc = spawn('pbcopy', [], { env: UTF8_ENV });
+            const proc = spawn(PBCOPY, [], { env: UTF8_ENV });
             proc.on('close', (code) => {
                 if (code === 0)
                     resolve();
@@ -28698,7 +28701,7 @@ async function copyToClipboard(text) {
  */
 async function pasteFromClipboard() {
     if (isMac) {
-        const { stdout } = await execAsync('pbpaste', {
+        const { stdout } = await execAsync(PBPASTE, {
             encoding: 'utf8',
             env: UTF8_ENV,
             maxBuffer: 10 * 1024 * 1024
@@ -28719,7 +28722,7 @@ async function pasteFromClipboard() {
 async function simulateCopy() {
     if (isMac) {
         // key code 8 = "c" on US layout, works regardless of active input method
-        await execAsync(`osascript -e 'tell application "System Events" to key code 8 using {command down}'`);
+        await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 8 using {command down}'`);
     }
     else {
         await execAsync(`powershell -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^c')"`);
@@ -28733,7 +28736,7 @@ async function simulateCopy() {
 async function simulatePaste() {
     if (isMac) {
         // key code 9 = "v" on US layout, works regardless of active input method
-        await execAsync(`osascript -e 'tell application "System Events" to key code 9 using {command down}'`);
+        await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 9 using {command down}'`);
     }
     else {
         await execAsync(`powershell -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^v')"`);
@@ -28741,11 +28744,11 @@ async function simulatePaste() {
 }
 
 const log = (msg) => {
+    streamDeck.logger.info(msg);
     try {
         fs.appendFileSync('/tmp/ai-plugin.log', `[${new Date().toISOString()}] ${msg}\n`);
-        streamDeck.logger.info(msg);
     }
-    catch (e) { }
+    catch (_) { /* /tmp may be unwritable when debug is off */ }
 };
 const PRESETS = [
     {
@@ -28773,6 +28776,13 @@ const PRESETS = [
         key: 'translate-sr',
         name: 'Translate SR',
         systemPrompt: 'You are a professional translator. Translate the following text to Serbian. Preserve the tone and style. Output ONLY the translated text.',
+        userPromptTemplate: '{{text}}',
+        postAction: 'paste'
+    },
+    {
+        key: 'translate-de',
+        name: 'Translate DE',
+        systemPrompt: 'You are a professional translator. Translate the following text to German. Preserve the tone and style. Output ONLY the translated text.',
         userPromptTemplate: '{{text}}',
         postAction: 'paste'
     },
@@ -28979,6 +28989,13 @@ let PromptSelectorAction = (() => {
                 this.presetIndices.set(contextId, saved);
             }
             if (ev.action.isDial()) {
+                // Set layout explicitly so feedback (title/value/indicator) is shown when debug is off.
+                try {
+                    await ev.action.setFeedbackLayout('$B1');
+                }
+                catch (e) {
+                    log(`setFeedbackLayout error: ${e.message}`);
+                }
                 await this.updateDisplay(ev, contextId, settings);
             }
         }
@@ -29096,34 +29113,16 @@ streamDeck.settings.onDidReceiveGlobalSettings((ev) => {
     streamDeck.logger.info(`Received global settings: ${JSON.stringify(ev.settings)}`);
 });
 
-// Use a fixed path for absolute reliability
-const logFile = '/tmp/ai-assistant-final.log';
-const debugLog = (message) => {
-    const timestamp = new Date().toISOString();
-    const logMessage = `[${timestamp}] ${message}\n`;
-    try {
-        fs__default.appendFileSync(logFile, logMessage);
-    }
-    catch (e) { }
-    console.log(message);
+const logMain = (msg) => {
+    streamDeck.logger.info(msg);
 };
-debugLog('--- PLUGIN STARTUP ---');
-debugLog(`CWD: ${process.cwd()}`);
-debugLog(`Args: ${JSON.stringify(process.argv)}`);
-// Catch-all for early errors
-process.on('uncaughtException', (err) => {
-    debugLog(`[CRITICAL] Uncaught Exception: ${err.message}\n${err.stack}`);
-});
-process.on('unhandledRejection', (reason) => {
-    debugLog(`[CRITICAL] Unhandled Rejection: ${reason}`);
-});
-debugLog('Registering actions...');
+logMain('Registering actions...');
 streamDeck.actions.registerAction(new AITextAction());
 streamDeck.actions.registerAction(new PromptSelectorAction());
-debugLog('Connecting...');
+logMain('Connecting...');
 streamDeck.connect().then(() => {
-    debugLog('Connected successfully');
+    logMain('Connected successfully');
 }).catch((e) => {
-    debugLog(`Connection failed: ${e.message}`);
+    logMain(`Connection failed: ${e.message}`);
 });
-//# sourceMappingURL=plugin.js.map
+//# sourceMappingURL=main.js.map

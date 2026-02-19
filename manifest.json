@@ -3,17 +3,16 @@
   "Name": "AI Assistant",
   "Version": "1.0.0.0",
   "Author": "dzarlax",
-  "Description": "AI-powered text processing with OpenAI, Anthropic Claude, Google Gemini, OpenRouter, or custom endpoints. Includes 8 built-in presets: Fix Grammar, Translate (EN/RU/SR), Summarize, Explain Code, Professional, and Casual tone rewrites.",
+  "Description": "AI-powered text processing with OpenAI, Anthropic Claude, Google Gemini, OpenRouter, or custom endpoints. Includes 9 built-in presets: Fix Grammar, Translate (EN/RU/SR/DE), Summarize, Explain Code, Professional, and Casual tone rewrites.",
   "Icon": "imgs/pluginIcon",
   "URL": "https://github.com/dzarlax/streamdeck-ai-plugin",
   "Category": "AI Assistant",
   "CategoryIcon": "imgs/categoryIcon",
-  "CodePath": "bin/plugin.js",
-  "CodePathMac": "bin/plugin.js",
-  "CodePathWin": "bin/plugin.js",
+  "CodePath": "bin/launcher.js",
+  "CodePathMac": "bin/launcher.js",
+  "CodePathWin": "bin/launcher.js",
   "Nodejs": {
-    "Version": "20",
-    "Debug": "enabled"
+    "Version": "20"
   },
   "SDKVersion": 2,
   "Software": {
@@ -35,7 +34,7 @@
       "Name": "AI Text Action",
       "States": [
         {
-          "Image": "imgs/actionIdle",
+          "Image": "imgs/actionIcon",
           "TitleAlignment": "middle",
           "FontSize": 12
         },
