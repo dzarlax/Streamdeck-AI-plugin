@@ -1,6 +1,6 @@
 # Privacy Policy - AI Assistant for Stream Deck
 
-**Last Updated:** February 2025
+**Last Updated:** February 2026
 
 ## Data Collection
 
@@ -43,7 +43,7 @@ The plugin does not retain any processed text. All data is handled in-memory dur
 
 ## Contact
 
-For privacy-related questions, please contact: [Insert your email]
+For privacy-related questions, please open an issue at [github.com/dzarlax/streamdeck-ai-plugin](https://github.com/dzarlax/streamdeck-ai-plugin/issues).
 
 ## Changes
 

@@ -10,11 +10,10 @@ import zlib from 'zlib';
 import require$$0$1 from 'buffer';
 import path, { join } from 'node:path';
 import { cwd } from 'node:process';
-import fs$1, { existsSync, readFileSync } from 'node:fs';
+import fs, { existsSync, readFileSync } from 'node:fs';
 import require$$1$3, { promisify } from 'util';
 import path$1 from 'path';
-import * as fs from 'fs';
-import fs__default from 'fs';
+import fs$1 from 'fs';
 import http2 from 'http2';
 import require$$4$1 from 'assert';
 import require$$0$4 from 'tty';
@@ -6243,14 +6242,14 @@ class FileTarget {
      * @inheritdoc
      */
     write(entry) {
-        const fd = fs$1.openSync(this.filePath, "a");
+        const fd = fs.openSync(this.filePath, "a");
         try {
             const msg = this.options.format(entry);
-            fs$1.writeSync(fd, msg + "\n");
+            fs.writeSync(fd, msg + "\n");
             this.size += msg.length;
         }
         finally {
-            fs$1.closeSync(fd);
+            fs.closeSync(fd);
         }
         if (this.size >= this.options.maxSize) {
             this.reIndex();
@@ -6271,7 +6270,7 @@ class FileTarget {
      */
     getLogFiles() {
         const regex = /^\.(\d+)\.log$/;
-        return fs$1
+        return fs
             .readdirSync(this.options.dest, { withFileTypes: true })
             .reduce((prev, entry) => {
             if (entry.isDirectory() || entry.name.indexOf(this.options.fileName) < 0) {
@@ -6297,18 +6296,18 @@ class FileTarget {
      */
     reIndex() {
         // When the destination directory is new, create it, and return.
-        if (!fs$1.existsSync(this.options.dest)) {
-            fs$1.mkdirSync(this.options.dest);
+        if (!fs.existsSync(this.options.dest)) {
+            fs.mkdirSync(this.options.dest);
             return;
         }
         const logFiles = this.getLogFiles();
         for (let i = logFiles.length - 1; i >= 0; i--) {
             const log = logFiles[i];
             if (i >= this.options.maxFileCount - 1) {
-                fs$1.rmSync(log.path);
+                fs.rmSync(log.path);
             }
             else {
-                fs$1.renameSync(log.path, this.getLogFilePath(i + 1));
+                fs.renameSync(log.path, this.getLogFilePath(i + 1));
             }
         }
     }
@@ -7991,12 +7990,12 @@ const deviceService = new DeviceService();
  */
 function fileSystemLocaleProvider(language) {
     const filePath = path.join(process.cwd(), `${language}.json`);
-    if (!fs$1.existsSync(filePath)) {
+    if (!fs.existsSync(filePath)) {
         return null;
     }
     try {
         // Parse the translations from the file.
-        const contents = fs$1.readFileSync(filePath, { flag: "r" })?.toString();
+        const contents = fs.readFileSync(filePath, { flag: "r" })?.toString();
         return parseLocalizations(contents);
     }
     catch (err) {
@@ -22051,7 +22050,7 @@ function requireForm_data () {
 	var http = require$$1$2;
 	var https = require$$1$1;
 	var parseUrl = require$$0$2.parse;
-	var fs = fs__default;
+	var fs = fs$1;
 	var Stream = stream$1.Stream;
 	var crypto = require$$1;
 	var mime = requireMimeTypes();
@@ -24660,7 +24659,7 @@ function requireNode () {
 		      break;
 
 		    case 'FILE':
-		      var fs = fs__default;
+		      var fs = fs$1;
 		      stream = new fs.SyncWriteStream(fd, { autoClose: false });
 		      stream._type = 'fs';
 		      break;
@@ -28573,94 +28572,126 @@ const {
   mergeConfig
 } = axios;
 
+function extractAPIError(error) {
+    if (error.response) {
+        const status = error.response.status;
+        const data = error.response.data;
+        const msg = data?.error?.message || data?.error?.type || '';
+        if (status === 401)
+            return 'Invalid API key';
+        if (status === 403)
+            return 'Access denied';
+        if (status === 404)
+            return 'Model not found';
+        if (status === 429)
+            return 'Rate limit exceeded';
+        if (status === 500 || status === 502 || status === 503)
+            return 'API server error';
+        if (msg)
+            return msg.slice(0, 60);
+        return `HTTP ${status}`;
+    }
+    if (error.code === 'ECONNABORTED' || error.message?.includes('timeout'))
+        return 'Request timed out';
+    if (error.code === 'ENOTFOUND')
+        return 'Cannot reach API';
+    return error.message?.slice(0, 60) || 'Unknown error';
+}
 async function callAI(systemPrompt, userPrompt, config) {
     const { provider, apiKey, model, baseUrl, temperature = 0.7, maxTokens = 4096, timeout = 30 } = config;
     const timeoutMs = timeout * 1000;
-    if (provider === 'openai' || provider === 'custom' || provider === 'openrouter') {
-        const url = baseUrl ||
-            (provider === 'openai' ? 'https://api.openai.com/v1/chat/completions' :
-                provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : '');
-        const response = await axios.post(url, {
-            model,
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature,
-            max_tokens: maxTokens
-        }, {
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json',
-                ...(provider === 'openrouter' ? { 'HTTP-Referer': 'https://github.com/dzarlax/streamdeck-ai-plugin', 'X-Title': 'Stream Deck AI Assistant' } : {})
-            },
-            timeout: timeoutMs
-        });
-        return {
-            text: response.data.choices[0].message.content,
-            usage: {
-                promptTokens: response.data.usage?.prompt_tokens,
-                completionTokens: response.data.usage?.completion_tokens
-            }
-        };
-    }
-    else if (provider === 'anthropic') {
-        const url = baseUrl || 'https://api.anthropic.com/v1/messages';
-        const response = await axios.post(url, {
-            model,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
-            max_tokens: maxTokens,
-            temperature
-        }, {
-            headers: {
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01',
-                'Content-Type': 'application/json'
-            },
-            timeout: timeoutMs
-        });
-        return {
-            text: response.data.content[0].text,
-            usage: {
-                promptTokens: response.data.usage?.input_tokens,
-                completionTokens: response.data.usage?.output_tokens
-            }
-        };
-    }
-    else if (provider === 'gemini') {
-        const url = baseUrl || `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-        const response = await axios.post(url, {
-            contents: [
-                {
-                    parts: [{ text: userPrompt }]
-                }
-            ],
-            systemInstruction: {
-                parts: [{ text: systemPrompt }]
-            },
-            generationConfig: {
+    try {
+        if (provider === 'openai' || provider === 'custom' || provider === 'openrouter') {
+            const url = baseUrl ||
+                (provider === 'openai' ? 'https://api.openai.com/v1/chat/completions' :
+                    provider === 'openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : '');
+            const response = await axios.post(url, {
+                model,
+                messages: [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: userPrompt }
+                ],
                 temperature,
-                maxOutputTokens: maxTokens
-            }
-        }, {
-            params: {
-                key: apiKey
-            },
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            timeout: timeoutMs
-        });
-        return {
-            text: response.data.candidates[0].content.parts[0].text,
-            usage: {
-                promptTokens: response.data.usageMetadata?.promptTokenCount,
-                completionTokens: response.data.usageMetadata?.candidatesTokenCount
-            }
-        };
+                max_tokens: maxTokens
+            }, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    ...(provider === 'openrouter' ? { 'HTTP-Referer': 'https://github.com/dzarlax/streamdeck-ai-plugin', 'X-Title': 'Stream Deck AI Assistant' } : {})
+                },
+                timeout: timeoutMs
+            });
+            return {
+                text: response.data.choices[0].message.content,
+                usage: {
+                    promptTokens: response.data.usage?.prompt_tokens,
+                    completionTokens: response.data.usage?.completion_tokens
+                }
+            };
+        }
+        else if (provider === 'anthropic') {
+            const url = baseUrl || 'https://api.anthropic.com/v1/messages';
+            const response = await axios.post(url, {
+                model,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }],
+                max_tokens: maxTokens,
+                temperature
+            }, {
+                headers: {
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01',
+                    'Content-Type': 'application/json'
+                },
+                timeout: timeoutMs
+            });
+            return {
+                text: response.data.content[0].text,
+                usage: {
+                    promptTokens: response.data.usage?.input_tokens,
+                    completionTokens: response.data.usage?.output_tokens
+                }
+            };
+        }
+        else if (provider === 'gemini') {
+            const url = baseUrl || `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+            const response = await axios.post(url, {
+                contents: [
+                    {
+                        parts: [{ text: userPrompt }]
+                    }
+                ],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                generationConfig: {
+                    temperature,
+                    maxOutputTokens: maxTokens
+                }
+            }, {
+                params: {
+                    key: apiKey
+                },
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                timeout: timeoutMs
+            });
+            return {
+                text: response.data.candidates[0].content.parts[0].text,
+                usage: {
+                    promptTokens: response.data.usageMetadata?.promptTokenCount,
+                    completionTokens: response.data.usageMetadata?.candidatesTokenCount
+                }
+            };
+        }
+        throw new Error(`Unsupported provider: ${provider}`);
     }
-    throw new Error(`Unsupported provider: ${provider}`);
+    catch (error) {
+        if (error.message?.startsWith('Unsupported provider'))
+            throw error;
+        throw new Error(extractAPIError(error));
+    }
 }
 
 const execAsync = promisify(exec);
@@ -28745,10 +28776,6 @@ async function simulatePaste() {
 
 const log = (msg) => {
     streamDeck.logger.info(msg);
-    try {
-        fs.appendFileSync('/tmp/ai-plugin.log', `[${new Date().toISOString()}] ${msg}\n`);
-    }
-    catch (_) { /* /tmp may be unwritable when debug is off */ }
 };
 const PRESETS = [
     {
@@ -28872,7 +28899,7 @@ let AITextAction = (() => {
         }
         async onKeyDown(ev) {
             const { settings } = ev.payload;
-            log(`Key pressed. Settings: ${JSON.stringify(settings)}`);
+            log(`Key pressed. Action: ${settings.actionName || 'unnamed'}, input: ${settings.inputMode || 'selection'}`);
             try {
                 if (ev.action.isKey()) {
                     await ev.action.setState(1);
@@ -29049,8 +29076,8 @@ let PromptSelectorAction = (() => {
             catch (error) {
                 log(`Encoder error: ${error.message}`);
                 await ev.action.setFeedback({
-                    title: preset.name,
-                    value: 'Error!',
+                    title: 'Error',
+                    value: error.message?.slice(0, 30) || 'Unknown error',
                     indicator: { value: 0, enabled: false }
                 });
                 await ev.action.showAlert();
@@ -29096,8 +29123,8 @@ let PromptSelectorAction = (() => {
             catch (error) {
                 log(`Touch error: ${error.message}`);
                 await ev.action.setFeedback({
-                    title: preset.name,
-                    value: 'Error!',
+                    title: 'Error',
+                    value: error.message?.slice(0, 30) || 'Unknown error',
                     indicator: { value: 0, enabled: false }
                 });
                 await ev.action.showAlert();
@@ -29110,7 +29137,8 @@ let PromptSelectorAction = (() => {
     return _classThis;
 })();
 streamDeck.settings.onDidReceiveGlobalSettings((ev) => {
-    streamDeck.logger.info(`Received global settings: ${JSON.stringify(ev.settings)}`);
+    const safe = { ...ev.settings, apiKey: ev.settings.apiKey ? '***' : undefined };
+    streamDeck.logger.info(`Received global settings: ${JSON.stringify(safe)}`);
 });
 
 const logMain = (msg) => {

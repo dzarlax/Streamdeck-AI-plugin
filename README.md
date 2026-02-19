@@ -1,70 +1,54 @@
 # AI Assistant - Stream Deck Plugin
 
-Process text with AI APIs using clipboard manipulation and keyboard emulation.
+AI-powered text processing plugin for Elgato Stream Deck. Capture selected text or clipboard content, send it to an AI provider, and get the result pasted back or copied to clipboard.
 
 ## Features
-- Multiple AI provider support (OpenAI, Anthropic, OpenRouter)
-- Custom prompts with templating
-- Clipboard-based text processing
-- Keyboard emulation for paste operations
-- Stream Deck + encoder support for prompt selection
+
+- **Multiple AI providers**: OpenAI, Anthropic Claude, Google Gemini, OpenRouter, or any custom OpenAI-compatible endpoint
+- **9 built-in presets**: Fix Grammar, Translate (EN/RU/SR/DE), Summarize, Explain Code, Professional & Casual rewrites
+- **Two action types**:
+  - **AI Text Action** — regular key with fully customizable prompts
+  - **AI Prompt Selector** — Stream Deck+ encoder with quick preset switching via dial rotation
+- **Custom prompts** with `{{text}}` template variable
+- **Clipboard & selection modes** — process selected text or clipboard content
 
 ## Installation
 
-```bash
-# Install dependencies
-npm install
-
-# Build plugin
-npm run build
-
-# Link to Stream Deck (one-time setup)
-streamdeck link com.dzarlax.ai-assistant.sdPlugin
-```
+1. Download the latest release from [Releases](https://github.com/dzarlax/streamdeck-ai-plugin/releases)
+2. Double-click the `.streamDeckPlugin` file to install
+3. The plugin will appear in Stream Deck under the **AI Assistant** category
 
 ## Configuration
 
-Configure the plugin through the Property Inspector in Stream Deck:
-1. Select your AI provider
-2. Enter your API key
-3. Set your default prompt
+1. Drag an **AI Text Action** or **AI Prompt Selector** to your Stream Deck
+2. In the Property Inspector, select your AI provider (OpenAI, Anthropic, Gemini, OpenRouter, or Custom)
+3. Enter your API key
+4. Choose a model or use the **Fetch** button to load available models from the API
+5. Configure prompts or select a built-in preset
 
-## Project Structure
+## Usage
 
-```
-├── src/
-│   ├── main.ts          # Entry point
-│   └── plugin.ts        # Action implementations
-├── com.dzarlax.ai-assistant.sdPlugin/
-│   ├── bin/             # Compiled plugin
-│   ├── ui/              # Property Inspector
-│   ├── imgs/            # Icons
-│   └── manifest.json    # Plugin manifest
-├── rollup.config.mjs    # Build configuration
-└── manifest.json        # Source manifest
-```
+### AI Text Action (Key)
+- Press the key to capture selected text (or clipboard), process it through AI, and paste/copy the result
+- Customize the system prompt and user template per key
 
-## Development Status
+### AI Prompt Selector (Encoder / Stream Deck+)
+- **Rotate** the dial to switch between presets
+- **Press** or **tap** to execute the selected preset
+- Enable/disable and reorder presets in the Property Inspector
 
-**Currently debugging connection issue** - see `@claude.md` for detailed notes.
+## Building from Source
 
-### Known Issue
-- Plugin works when run manually
-- Stream Deck doesn't auto-spawn the plugin process
-- Error: "The plugin 'com.dzarlax.ai-assistant' has no attached client"
-
-### Quick Test
 ```bash
-# Test plugin manually (this works!)
-cd "/Users/dzarlax/Library/Application Support/com.elgato.StreamDeck/Plugins/com.dzarlax.ai-assistant.sdPlugin"
-/Users/dzarlax/Library/Application\ Support/com.elgato.StreamDeck/NodeJS/20.19.5/node --no-global-search-paths bin/plugin.js -port 28196 -pluginUUID test -registerEvent registerPlugin -info '{"application":{"platform":"mac"},"devices":[],"plugin":{"uuid":"com.dzarlax.ai-assistant"}}'
+npm install
+npm run build
+streamdeck link com.dzarlax.ai-assistant.sdPlugin
 ```
 
-## Tech Stack
-- TypeScript
-- @elgato/streamdeck SDK v1.4.1
-- Rollup for bundling
-- Axios for HTTP requests
+## Privacy
+
+Your text is sent directly from your computer to the selected AI provider's API. The plugin does not collect analytics, telemetry, or personal data. See [Privacy Policy](PRIVACY.md) for details.
 
 ## License
-MIT
+
+[MIT](LICENSE)

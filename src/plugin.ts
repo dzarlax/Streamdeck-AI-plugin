@@ -17,13 +17,8 @@ import {
   simulatePaste
 } from './system-utils.js';
 
-import * as fs from 'fs';
-
 const log = (msg: string) => {
   streamDeck.logger.info(msg);
-  try {
-    fs.appendFileSync('/tmp/ai-plugin.log', `[${new Date().toISOString()}] ${msg}\n`);
-  } catch (_) { /* /tmp may be unwritable when debug is off */ }
 };
 
 interface GlobalSettings extends JsonObject {
@@ -180,7 +175,7 @@ class AITextAction extends SingletonAction<ActionSettings> {
   override async onKeyDown(ev: KeyDownEvent<ActionSettings>): Promise<void> {
     const { settings } = ev.payload;
 
-    log(`Key pressed. Settings: ${JSON.stringify(settings)}`);
+    log(`Key pressed. Action: ${settings.actionName || 'unnamed'}, input: ${settings.inputMode || 'selection'}`);
 
     try {
       if (ev.action.isKey()) {
@@ -366,8 +361,8 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
     } catch (error: any) {
       log(`Encoder error: ${error.message}`);
       await ev.action.setFeedback({
-        title: preset.name,
-        value: 'Error!',
+        title: 'Error',
+        value: error.message?.slice(0, 30) || 'Unknown error',
         indicator: { value: 0, enabled: false }
       });
       await ev.action.showAlert();
@@ -421,8 +416,8 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
     } catch (error: any) {
       log(`Touch error: ${error.message}`);
       await ev.action.setFeedback({
-        title: preset.name,
-        value: 'Error!',
+        title: 'Error',
+        value: error.message?.slice(0, 30) || 'Unknown error',
         indicator: { value: 0, enabled: false }
       });
       await ev.action.showAlert();
@@ -437,5 +432,6 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
 export { AITextAction, PromptSelectorAction };
 
 streamDeck.settings.onDidReceiveGlobalSettings((ev) => {
-  streamDeck.logger.info(`Received global settings: ${JSON.stringify(ev.settings)}`);
+  const safe = { ...ev.settings, apiKey: ev.settings.apiKey ? '***' : undefined };
+  streamDeck.logger.info(`Received global settings: ${JSON.stringify(safe)}`);
 });

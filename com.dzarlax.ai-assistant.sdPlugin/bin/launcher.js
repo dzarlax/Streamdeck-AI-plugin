@@ -1,4 +1,4 @@
-import fs__default from 'fs';
+import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
@@ -15,7 +15,7 @@ function crashLog(msg) {
     const line = `[${new Date().toISOString()}] ${msg}\n`;
     for (const file of candidates) {
         try {
-            fs__default.appendFileSync(file, line);
+            fs.appendFileSync(file, line);
             break;
         }
         catch (_) { }
