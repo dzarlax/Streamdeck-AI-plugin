@@ -75,7 +75,7 @@ const PRESETS = [
   {
     key: 'translate-sr',
     name: 'Translate SR',
-    systemPrompt: 'You are a professional translator. Translate the following text to Serbian. Preserve the tone and style. Output ONLY the translated text.',
+    systemPrompt: 'You are a professional translator. Translate the following text to Serbian Latin. Preserve the tone and style. Output ONLY the translated text.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
