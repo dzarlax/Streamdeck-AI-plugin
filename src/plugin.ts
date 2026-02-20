@@ -54,63 +54,63 @@ const PRESETS = [
   {
     key: 'fix-grammar',
     name: 'Fix Grammar',
-    systemPrompt: 'You are a professional proofreader. Fix all spelling and grammar errors while preserving the original meaning and tone. Output ONLY the corrected text, nothing else.',
+    systemPrompt: 'You are a professional proofreader. Fix ONLY spelling and grammar errors in the text. Do NOT rephrase, restructure, or change the style. Keep the original language. Output ONLY the corrected text, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
   {
     key: 'translate-en',
     name: 'Translate EN',
-    systemPrompt: 'You are a professional translator. Translate the following text to English. Preserve the tone and style. Output ONLY the translated text.',
+    systemPrompt: 'You are a professional translator. Translate the text into English. If it is already in English, return it unchanged. Preserve formatting, tone, and style. Output ONLY the translation, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
   {
     key: 'translate-ru',
     name: 'Translate RU',
-    systemPrompt: 'You are a professional translator. Translate the following text to Russian. Preserve the tone and style. Output ONLY the translated text.',
+    systemPrompt: 'You are a professional translator. Translate the text into Russian. If it is already in Russian, return it unchanged. Preserve formatting, tone, and style. Output ONLY the translation, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
   {
     key: 'translate-sr',
     name: 'Translate SR',
-    systemPrompt: 'You are a professional translator. Translate the following text to Serbian Latin. Preserve the tone and style. Output ONLY the translated text.',
+    systemPrompt: 'You are a professional translator. Translate the text into Serbian (Latin script). If it is already in Serbian Latin, return it unchanged. Preserve formatting, tone, and style. Output ONLY the translation, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
   {
     key: 'translate-de',
     name: 'Translate DE',
-    systemPrompt: 'You are a professional translator. Translate the following text to German. Preserve the tone and style. Output ONLY the translated text.',
+    systemPrompt: 'You are a professional translator. Translate the text into German. If it is already in German, return it unchanged. Preserve formatting, tone, and style. Output ONLY the translation, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
   {
     key: 'summarize',
     name: 'Summarize',
-    systemPrompt: 'You are an expert at summarization. Summarize the following content concisely in 3-5 bullet points. Use clear, simple language.',
+    systemPrompt: 'You are an expert at summarization. Summarize the following content. For short texts (under 100 words), write 1-2 sentences. For longer content, use 3-5 bullet points. Be concise and clear. Output ONLY the summary, no introductions or explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'copy' as const
   },
   {
     key: 'explain-code',
     name: 'Explain Code',
-    systemPrompt: 'You are a programming expert. Explain the following code in simple terms. Describe what it does, how it works, and any notable patterns or techniques used.',
+    systemPrompt: 'You are a programming expert. Explain what the following code does in plain language. Cover: purpose, logic, and any notable patterns. Write clearly for a developer who did not write this code. Do not repeat the code in your response.',
     userPromptTemplate: '{{text}}',
     postAction: 'copy' as const
   },
   {
     key: 'professional',
     name: 'Professional',
-    systemPrompt: 'You are a professional editor. Rewrite the following text in a more professional, polished tone while keeping the same meaning.',
+    systemPrompt: 'You are a professional editor. Rewrite the following text in a more professional, polished tone. Keep the same language, meaning, and key points. Do NOT translate. Output ONLY the rewritten text, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   },
   {
     key: 'casual',
     name: 'Casual',
-    systemPrompt: 'You are a casual, friendly editor. Rewrite the following text in a more relaxed, conversational tone while keeping the same meaning.',
+    systemPrompt: 'You are a friendly editor. Rewrite the following text in a more relaxed, conversational tone. Keep the same language, meaning, and key points. Do NOT translate. Output ONLY the rewritten text, no explanations.',
     userPromptTemplate: '{{text}}',
     postAction: 'paste' as const
   }
@@ -192,7 +192,7 @@ class AITextAction extends SingletonAction<ActionSettings> {
       if (ev.action.isKey()) {
         await ev.action.setState(2);
         setTimeout(() => {
-          (ev.action as any).setState(0).catch(() => { });
+          ev.action.setState(0).catch(() => { });
         }, 1500);
       }
       log('Action completed successfully');
@@ -202,7 +202,7 @@ class AITextAction extends SingletonAction<ActionSettings> {
       if (ev.action.isKey()) {
         await ev.action.setState(3);
         setTimeout(() => {
-          (ev.action as any).setState(0).catch(() => { });
+          ev.action.setState(0).catch(() => { });
         }, 3000);
       }
       await ev.action.showAlert();
@@ -318,20 +318,20 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
     log(`Dial rotated: preset ${newIndex} (${preset?.name ?? 'none'})`);
   }
 
-  override async onDialDown(ev: DialDownEvent<EncoderSettings>): Promise<void> {
-    const contextId = ev.action.id;
-    const settings = ev.payload.settings;
+  private async executePreset(ev: { action: any }, contextId: string, settings: EncoderSettings, source: string): Promise<void> {
+    this.encoderSettings.set(contextId, settings);
+
     const activePresets = this.getActivePresets(settings);
     const index = this.getIndex(contextId, activePresets.length);
     const preset = activePresets[index];
 
     if (!preset) {
-      log('Dial pressed: no active presets');
+      log(`${source}: no active presets`);
       await ev.action.showAlert();
       return;
     }
 
-    log(`Dial pressed: executing preset "${preset.name}"`);
+    log(`${source}: executing preset "${preset.name}"`);
 
     try {
       await ev.action.setFeedback({
@@ -352,14 +352,14 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
         value: 'Done!',
         indicator: 100
       });
-      log(`Encoder action completed: ${preset.name}`);
+      log(`${source} completed: ${preset.name}`);
 
       setTimeout(() => {
         this.updateDisplay(ev, contextId, settings).catch(() => { });
       }, 1500);
 
     } catch (error: any) {
-      log(`Encoder error: ${error.message}`);
+      log(`${source} error: ${error.message}`);
       await ev.action.setFeedback({
         title: 'Error',
         value: error.message?.slice(0, 30) || 'Unknown error',
@@ -373,59 +373,12 @@ class PromptSelectorAction extends SingletonAction<EncoderSettings> {
     }
   }
 
+  override async onDialDown(ev: DialDownEvent<EncoderSettings>): Promise<void> {
+    await this.executePreset(ev, ev.action.id, ev.payload.settings, 'Dial pressed');
+  }
+
   override async onTouchTap(ev: TouchTapEvent<EncoderSettings>): Promise<void> {
-    const contextId = ev.action.id;
-    const settings = ev.payload.settings;
-    const activePresets = this.getActivePresets(settings);
-    const index = this.getIndex(contextId, activePresets.length);
-    const preset = activePresets[index];
-
-    if (!preset) {
-      log('Touch tap: no active presets');
-      await ev.action.showAlert();
-      return;
-    }
-
-    log(`Touch tap: executing preset "${preset.name}"`);
-
-    try {
-      await ev.action.setFeedback({
-        title: preset.name,
-        value: 'Processing...',
-        indicator: { value: 0, enabled: false }
-      });
-
-      await processWithAI({
-        systemPrompt: preset.systemPrompt,
-        userPromptTemplate: preset.userPromptTemplate,
-        inputMode: 'selection',
-        postAction: preset.postAction
-      });
-
-      await ev.action.setFeedback({
-        title: preset.name,
-        value: 'Done!',
-        indicator: 100
-      });
-      log(`Touch action completed: ${preset.name}`);
-
-      setTimeout(() => {
-        this.updateDisplay(ev, contextId, settings).catch(() => { });
-      }, 1500);
-
-    } catch (error: any) {
-      log(`Touch error: ${error.message}`);
-      await ev.action.setFeedback({
-        title: 'Error',
-        value: error.message?.slice(0, 30) || 'Unknown error',
-        indicator: { value: 0, enabled: false }
-      });
-      await ev.action.showAlert();
-
-      setTimeout(() => {
-        this.updateDisplay(ev, contextId, settings).catch(() => { });
-      }, 3000);
-    }
+    await this.executePreset(ev, ev.action.id, ev.payload.settings, 'Touch tap');
   }
 }
 

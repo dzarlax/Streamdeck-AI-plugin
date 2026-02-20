@@ -46,6 +46,10 @@ export async function callAI(
 
     const timeoutMs = timeout * 1000;
 
+    if (provider === 'custom' && !baseUrl) {
+        throw new Error('Base URL is required for custom provider');
+    }
+
     try {
         if (provider === 'openai' || provider === 'custom' || provider === 'openrouter') {
             const url = baseUrl ||
