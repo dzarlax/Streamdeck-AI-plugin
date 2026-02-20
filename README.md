@@ -1,3 +1,5 @@
+![AI Assistant](Thumbnail.png)
+
 # AI Assistant - Stream Deck Plugin
 
 AI-powered text processing plugin for Elgato Stream Deck. Capture selected text or clipboard content, send it to an AI provider, and get the result pasted back or copied to clipboard.
