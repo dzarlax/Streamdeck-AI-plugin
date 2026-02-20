@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- Dial/encoder knob — white on transparent, square 72x72 -->
+  <!-- Outer ring -->
+  <circle cx="36" cy="40" r="24" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+  <!-- Indicator dot at top of dial -->
+  <circle cx="36" cy="18" r="3.5" fill="#ffffff"/>
+  <!-- Stem connecting dot to ring -->
+  <line x1="36" y1="21" x2="36" y2="16" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Inner filled circle (knob body) -->
+  <circle cx="36" cy="40" r="10" fill="#ffffff"/>
+  <!-- Tick mark at top (indicator line) -->
+  <line x1="36" y1="16" x2="36" y2="22" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

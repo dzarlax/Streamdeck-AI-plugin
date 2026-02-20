@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- AI chip — white on transparent, sized for 72x72 -->
+  <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+  <rect x="26" y="26" width="20" height="20" rx="3" fill="#ffffff"/>
+  <!-- Pins left -->
+  <line x1="18" y1="27" x2="10" y2="27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="18" y1="36" x2="10" y2="36" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="18" y1="45" x2="10" y2="45" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Pins right -->
+  <line x1="54" y1="27" x2="62" y2="27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="54" y1="36" x2="62" y2="36" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="54" y1="45" x2="62" y2="45" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Pins top -->
+  <line x1="27" y1="18" x2="27" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="36" y1="18" x2="36" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="18" x2="45" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Pins bottom -->
+  <line x1="27" y1="54" x2="27" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="36" y1="54" x2="36" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <line x1="45" y1="54" x2="45" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+</svg>

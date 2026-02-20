@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- Clock icon — white on transparent -->
+  <circle cx="36" cy="36" r="22" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+  <!-- Hour hand -->
+  <line x1="36" y1="36" x2="36" y2="20" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Minute hand -->
+  <line x1="36" y1="36" x2="47" y2="43" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  <!-- Center dot -->
+  <circle cx="36" cy="36" r="2.5" fill="#ffffff"/>
+</svg>

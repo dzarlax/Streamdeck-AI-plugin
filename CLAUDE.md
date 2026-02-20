@@ -16,8 +16,10 @@ Stream Deck plugin for AI-powered text processing. Captures selected text or cli
 ```
 com.dzarlax.ai-assistant.sdPlugin/
 ├── bin/
-│   ├── plugin.js          # Bundled plugin code (ESM)
-│   └── plugin.js.map      # Source map
+│   ├── launcher.js        # Entry point (loads crash handler, then main)
+│   ├── launcher.js.map
+│   ├── main.js            # Bundled plugin code (ESM)
+│   └── main.js.map        # Source map
 ├── imgs/                   # Plugin icons
 ├── ui/
 │   ├── index.html          # Property Inspector
@@ -30,9 +32,11 @@ com.dzarlax.ai-assistant.sdPlugin/
 
 ```
 src/
-├── main.ts           # Entry point - registers actions, connects
+├── launcher.ts       # Minimal entry point - loads crash handler, then main
+├── crash-handler.ts  # Catches uncaughtException / unhandledRejection, logs to /tmp/ai-assistant-crash.log
+├── main.ts           # Registers actions, connects to Stream Deck
 ├── plugin.ts         # AITextAction, PromptSelectorAction classes
-├── api-client.ts     # AI API calls (OpenAI, Anthropic, OpenRouter)
+├── api-client.ts     # AI API calls (OpenAI, Anthropic, Gemini, OpenRouter)
 └── system-utils.ts   # Clipboard & keyboard emulation
 
 property-inspector/
@@ -179,7 +183,8 @@ streamdeck restart com.dzarlax.ai-assistant
 ### Encoder Settings (Prompt Selector)
 | Setting | Type | Description |
 |---------|------|-------------|
-| presetIndex | number | Current preset index (0-8) |
+| presetIndex | number | Current preset index within active presets |
+| encoderPresets | EncoderPresetConfig[] | Per-preset config: `{ key, enabled, order }`. If empty, all 9 presets are active |
 
 ---
 
@@ -237,9 +242,8 @@ npm run link     # Link to Stream Deck
 ## Debug
 
 ```bash
-# Plugin logs
-cat /tmp/ai-plugin.log
-cat /tmp/ai-assistant-final.log
+# Plugin logs (crash handler)
+cat /tmp/ai-assistant-crash.log
 
 # Stream Deck logs
 cat ~/Library/Logs/ElgatoStreamDeck/StreamDeck.json | grep ai-assistant

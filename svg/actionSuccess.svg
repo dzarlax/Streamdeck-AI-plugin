@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <!-- Checkmark — white on transparent -->
+  <circle cx="36" cy="36" r="22" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+  <polyline points="24,37 32,45 48,27" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
