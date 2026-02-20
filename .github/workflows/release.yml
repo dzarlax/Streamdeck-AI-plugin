@@ -1,0 +1,59 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build plugin
+        run: npm run build
+
+      - name: Install Elgato CLI
+        run: npm install -g @elgato/cli
+
+      - name: Pack plugin
+        run: streamdeck pack com.dzarlax.ai-assistant.sdPlugin
+
+      - name: Get release version
+        id: version
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          else
+            echo "tag=v${PKG_VERSION}" >> $GITHUB_OUTPUT
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          generate_release_notes: true
+          make_latest: true
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          files: com.dzarlax.ai-assistant.streamDeckPlugin
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
