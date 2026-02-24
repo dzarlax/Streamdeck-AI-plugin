@@ -1,6 +1,6 @@
 {
   "name": "streamdeck-ai-plugin",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Stream Deck plugin for AI-powered text processing",
   "type": "module",
   "scripts": {
@@ -19,7 +19,7 @@
   "author": "",
   "license": "MIT",
   "devDependencies": {
-    "@elgato/cli": "^1.0.0",
+    "@elgato/cli": "^1.7.1",
     "@rollup/plugin-commonjs": "^28.0.9",
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.3",
@@ -29,7 +29,7 @@
     "typescript": "^5.3.0"
   },
   "dependencies": {
-    "@elgato/streamdeck": "^1.4.1",
+    "@elgato/streamdeck": "^2.0.1",
     "axios": "^1.6.0"
   },
   "engines": {

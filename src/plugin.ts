@@ -1,13 +1,13 @@
 import streamDeck, {
   action,
   SingletonAction,
-  JsonObject,
   KeyDownEvent,
   WillAppearEvent,
   DialRotateEvent,
   DialDownEvent,
   TouchTapEvent
 } from '@elgato/streamdeck';
+import type { JsonObject } from '@elgato/utils';
 
 import { callAI, AIRequestConfig } from './api-client.js';
 import {
