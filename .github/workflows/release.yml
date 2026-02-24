@@ -2,8 +2,6 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -17,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,16 +36,24 @@ jobs:
       - name: Pack plugin
         run: streamdeck pack com.dzarlax.ai-assistant.sdPlugin
 
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        id: changelog
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+        env:
+          OUTPUT: CHANGELOG.md
+          GITHUB_REPO: ${{ github.repository }}
+
       - name: Get release version
         id: version
         run: |
           PKG_VERSION=$(node -p "require('./package.json').version")
           if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
             echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-            echo "prerelease=false" >> $GITHUB_OUTPUT
           else
             echo "tag=v${PKG_VERSION}" >> $GITHUB_OUTPUT
-            echo "prerelease=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Create GitHub Release
@@ -53,9 +61,8 @@ jobs:
         with:
           tag_name: ${{ steps.version.outputs.tag }}
           name: Release ${{ steps.version.outputs.tag }}
-          generate_release_notes: true
+          body: ${{ steps.changelog.outputs.content }}
           make_latest: true
-          prerelease: ${{ steps.version.outputs.prerelease }}
           files: com.dzarlax.ai-assistant.streamDeckPlugin
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
