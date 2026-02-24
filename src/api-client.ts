@@ -50,6 +50,10 @@ export async function callAI(
         throw new Error('Base URL is required for custom provider');
     }
 
+    // Models that only support default temperature (must not send the parameter)
+    const noTemperatureModels = /^(o1|o3|o4|gpt-5)/;
+    const supportsTemperature = provider !== 'openai' || !noTemperatureModels.test(model);
+
     try {
         if (provider === 'openai' || provider === 'custom' || provider === 'openrouter') {
             const url = baseUrl ||
@@ -64,8 +68,8 @@ export async function callAI(
                         { role: 'system', content: systemPrompt },
                         { role: 'user', content: userPrompt }
                     ],
-                    temperature,
-                    max_tokens: maxTokens
+                    ...(supportsTemperature ? { temperature } : {}),
+                    max_completion_tokens: maxTokens
                 },
                 {
                     headers: {
