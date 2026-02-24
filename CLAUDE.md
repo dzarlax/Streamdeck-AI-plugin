@@ -167,7 +167,7 @@ streamdeck restart com.dzarlax.ai-assistant
 | provider | string | "openai" | openai, anthropic, openrouter, custom |
 | apiKey | string | - | API key |
 | baseUrl | string | - | Custom endpoint |
-| model | string | "gpt-4o" | Model identifier |
+| model | string | "gpt-4.1" | Model identifier |
 | temperature | number | 0.7 | 0-2 |
 | maxTokens | number | 4096 | Max response length |
 | timeout | number | 30 | Seconds |
@@ -191,16 +191,16 @@ streamdeck restart com.dzarlax.ai-assistant
 ## Supported Models
 
 ### OpenAI
-o3-mini, o1, o1-mini, gpt-4o, gpt-4o-mini
+gpt-5, gpt-4.1, gpt-4.1-mini, o3, o4-mini
 
 ### Anthropic
 claude-sonnet-4-20250514, claude-3-7-sonnet-latest, claude-3-5-haiku-20241022, claude-3-opus-20240229
 
 ### Google Gemini
-gemini-2.5-pro-preview-06-05, gemini-2.0-flash, gemini-2.0-flash-lite, gemini-1.5-pro, gemini-1.5-flash
+gemini-3-flash-preview, gemini-2.5-pro, gemini-2.5-flash, gemini-2.5-flash-lite
 
 ### OpenRouter
-anthropic/claude-sonnet-4, openai/gpt-4o, google/gemini-pro-1.5, meta-llama/llama-3.1-70b-instruct
+anthropic/claude-sonnet-4, openai/gpt-4.1, openai/gpt-5, google/gemini-2.5-pro, meta-llama/llama-3.1-70b-instruct
 
 ---
 

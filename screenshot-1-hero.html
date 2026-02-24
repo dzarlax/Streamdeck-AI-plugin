@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920">
+  <title>AI Assistant – How It Works</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1920px;
+      height: 960px;
+      background: #0f0f1a;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 900px; height: 900px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.14) 0%, transparent 65%);
+      top: -300px; left: -200px;
+    }
+    body::after {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 65%);
+      bottom: -200px; right: 100px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 72px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 16px;
+    }
+
+    .title {
+      font-size: 56px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .title span {
+      background: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 360px;
+    }
+
+    .step-visual {
+      width: 240px;
+      height: 200px;
+      border-radius: 24px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step-visual::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(99,102,241,0.08) 0%, transparent 60%);
+    }
+
+    /* Step 1 — text selection visual */
+    .text-mock {
+      padding: 20px 24px;
+      width: 200px;
+    }
+    .text-line {
+      height: 10px;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.12);
+      margin-bottom: 10px;
+    }
+    .text-line.selected {
+      background: rgba(99,102,241,0.5);
+      box-shadow: 0 0 12px rgba(99,102,241,0.4);
+    }
+    .text-line.w80 { width: 80%; }
+    .text-line.w65 { width: 65%; }
+    .text-line.w90 { width: 90%; }
+    .text-line.w55 { width: 55%; }
+    .text-line.w75 { width: 75%; }
+
+    /* Step 2 — button visual */
+    .button-mock {
+      width: 108px;
+      height: 108px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+      box-shadow: 0 0 50px rgba(99,102,241,0.55), 0 8px 32px rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .button-mock svg {
+      width: 64px;
+      height: 64px;
+    }
+
+    /* Step 3 — result visual */
+    .result-mock {
+      padding: 16px 20px;
+      width: 200px;
+    }
+    .result-bubble {
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.3);
+      border-radius: 12px;
+      padding: 12px 16px;
+    }
+    .result-line {
+      height: 9px;
+      border-radius: 5px;
+      background: rgba(99,102,241,0.4);
+      margin-bottom: 8px;
+    }
+    .result-line:last-child { margin-bottom: 0; }
+    .result-line.w70 { width: 70%; }
+    .result-line.w85 { width: 85%; }
+    .result-line.w60 { width: 60%; }
+
+    .check-badge {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: #22c55e;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .check-badge svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .step-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 700;
+      color: #818cf8;
+      margin-bottom: 12px;
+    }
+
+    .step-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    /* Arrow connector */
+    .arrow {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      margin-bottom: 100px;
+      flex-shrink: 0;
+    }
+
+    .arrow-line {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(to right, rgba(99,102,241,0.2), rgba(99,102,241,0.6));
+      position: relative;
+    }
+
+    .arrow-line::after {
+      content: '';
+      position: absolute;
+      right: -1px; top: -5px;
+      width: 0; height: 0;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+      border-left: 10px solid rgba(99,102,241,0.6);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="eyebrow">AI Assistant · Stream Deck Plugin</div>
+    <div class="title">AI at your <span>fingertips</span></div>
+  </div>
+
+  <div class="flow">
+
+    <!-- Step 1: Select Text -->
+    <div class="step">
+      <div class="step-visual">
+        <div class="text-mock">
+          <div class="text-line w80"></div>
+          <div class="text-line w65"></div>
+          <div class="text-line w90 selected"></div>
+          <div class="text-line w55 selected"></div>
+          <div class="text-line w75 selected"></div>
+        </div>
+      </div>
+      <div class="step-num">1</div>
+      <div class="step-title">Select Text</div>
+      <div class="step-desc">Highlight any text<br>in any application</div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div></div>
+
+    <!-- Step 2: Press Button — uses our actionIcon (AI chip) -->
+    <div class="step">
+      <div class="step-visual">
+        <div class="button-mock">
+          <!-- actionIcon.svg inline -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="#ffffff" stroke-width="3.5"/>
+            <rect x="26" y="26" width="20" height="20" rx="3" fill="#ffffff"/>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="36" x2="10" y2="36" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="36" x2="62" y2="36" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="27" y1="18" x2="27" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="18" x2="36" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="45" y1="18" x2="45" y2="10" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="27" y1="54" x2="27" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="54" x2="36" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+            <line x1="45" y1="54" x2="45" y2="62" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="step-num">2</div>
+      <div class="step-title">Press Button</div>
+      <div class="step-desc">One tap on your<br>Stream Deck key</div>
+    </div>
+
+    <div class="arrow"><div class="arrow-line"></div></div>
+
+    <!-- Step 3: Result — uses actionSuccess icon -->
+    <div class="step">
+      <div class="step-visual">
+        <div class="result-mock">
+          <div class="result-bubble">
+            <div class="result-line w85"></div>
+            <div class="result-line w70"></div>
+            <div class="result-line w60"></div>
+          </div>
+        </div>
+        <!-- actionSuccess.svg inline -->
+        <div class="check-badge">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <polyline points="20,37 30,47 52,25" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="step-num">3</div>
+      <div class="step-title">Result Pasted</div>
+      <div class="step-desc">AI response replaces<br>your selection instantly</div>
+    </div>
+
+  </div>
+
+</body>
+</html>

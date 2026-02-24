@@ -6,7 +6,7 @@ let globalSettings = {
   provider: 'openai',
   apiKey: '',
   baseUrl: '',
-  model: 'gpt-4o',
+  model: 'gpt-4.1',
   temperature: 0.7,
   maxTokens: 4096,
   timeout: 30
@@ -17,11 +17,11 @@ let uuid = null;
 
 const FALLBACK_MODELS = {
   openai: [
-    { id: 'gpt-4o', name: 'GPT-4o' },
-    { id: 'gpt-4o-mini', name: 'GPT-4o Mini' },
-    { id: 'o3-mini', name: 'o3-mini' },
-    { id: 'o1', name: 'o1' },
-    { id: 'o1-mini', name: 'o1-mini' }
+    { id: 'gpt-5', name: 'GPT-5' },
+    { id: 'gpt-4.1', name: 'GPT-4.1' },
+    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini' },
+    { id: 'o3', name: 'o3' },
+    { id: 'o4-mini', name: 'o4-mini' }
   ],
   anthropic: [
     { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
@@ -31,10 +31,9 @@ const FALLBACK_MODELS = {
   ],
   openrouter: [
     { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
-    { id: 'anthropic/claude-3.5-sonnet', name: 'Claude 3.5 Sonnet' },
-    { id: 'openai/gpt-4o', name: 'GPT-4o' },
-    { id: 'openai/gpt-4o-mini', name: 'GPT-4o Mini' },
-    { id: 'google/gemini-pro-1.5', name: 'Gemini Pro 1.5' },
+    { id: 'openai/gpt-4.1', name: 'GPT-4.1' },
+    { id: 'openai/gpt-5', name: 'GPT-5' },
+    { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
     { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B' }
   ],
   custom: []

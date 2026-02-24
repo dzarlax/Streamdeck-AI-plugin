@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920">
+  <title>AI Assistant – Presets</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1920px;
+      height: 960px;
+      background: #0f0f1a;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 800px; height: 800px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.13) 0%, transparent 65%);
+      top: -250px; left: -150px;
+    }
+    body::after {
+      content: '';
+      position: absolute;
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(168,85,247,0.09) 0%, transparent 65%);
+      bottom: -200px; right: -100px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      padding: 0 120px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 56px;
+    }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 16px;
+    }
+
+    .title {
+      font-size: 54px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    .title span {
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 20px;
+      width: 100%;
+    }
+
+    .preset-card {
+      display: flex;
+      flex-direction: column;
+      padding: 28px 24px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .preset-card.col2 {
+      grid-column: span 2;
+      flex-direction: row;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .preset-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99,102,241,0.05) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .preset-card.active {
+      background: rgba(99,102,241,0.1);
+      border-color: rgba(99,102,241,0.25);
+    }
+
+    .preset-card.active::before {
+      background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, transparent 50%);
+    }
+
+    .preset-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .preset-icon svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .preset-card.col2 .preset-icon {
+      margin-bottom: 0;
+      width: 56px; height: 56px;
+    }
+
+    .preset-card.col2 .preset-icon svg {
+      width: 38px;
+      height: 38px;
+    }
+
+    .preset-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .preset-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.38);
+      line-height: 1.4;
+    }
+
+    .preset-action {
+      margin-top: auto;
+      padding-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .action-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+    }
+    .action-dot.paste { background: #22c55e; }
+    .action-dot.copy  { background: #f59e0b; }
+
+    .action-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .encoder-hint {
+      font-size: 14px;
+      color: rgba(255,255,255,0.25);
+      text-align: center;
+      margin-top: 28px;
+      letter-spacing: 0.5px;
+    }
+
+    .encoder-hint span {
+      color: rgba(99,102,241,0.7);
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <div class="eyebrow">Built-in Presets</div>
+      <div class="title">9 ready-to-use <span>AI actions</span></div>
+    </div>
+
+    <div class="grid">
+
+      <!-- Fix Grammar — indigo chip, active -->
+      <div class="preset-card active">
+        <div class="preset-icon" style="background:rgba(99,102,241,0.25);border:1px solid rgba(99,102,241,0.4);box-shadow:0 0 20px rgba(99,102,241,0.25);">
+          <!-- actionIcon chip in indigo -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="#818cf8" stroke-width="3.5"/>
+            <rect x="26" y="26" width="20" height="20" rx="3" fill="#818cf8"/>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="36" x2="10" y2="36" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="36" x2="62" y2="36" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="27" y1="18" x2="27" y2="10" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="18" x2="36" y2="10" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="45" y1="18" x2="45" y2="10" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="27" y1="54" x2="27" y2="62" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="54" x2="36" y2="62" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+            <line x1="45" y1="54" x2="45" y2="62" stroke="#818cf8" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Fix Grammar</div>
+        <div class="preset-desc">Correct & polish selected text instantly</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+      <!-- Translate EN — teal chip -->
+      <div class="preset-card">
+        <div class="preset-icon" style="background:rgba(20,184,166,0.12);border:1px solid rgba(20,184,166,0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(20,184,166,0.8)" stroke-width="3.5"/>
+            <text x="36" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="18" fill="rgba(20,184,166,0.9)" text-anchor="middle">EN</text>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(20,184,166,0.8)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(20,184,166,0.8)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(20,184,166,0.8)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(20,184,166,0.8)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Translate EN</div>
+        <div class="preset-desc">Translate to English</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+      <!-- Translate RU -->
+      <div class="preset-card">
+        <div class="preset-icon" style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(239,68,68,0.7)" stroke-width="3.5"/>
+            <text x="36" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="18" fill="rgba(239,68,68,0.85)" text-anchor="middle">RU</text>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(239,68,68,0.7)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(239,68,68,0.7)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(239,68,68,0.7)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(239,68,68,0.7)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Translate RU</div>
+        <div class="preset-desc">Translate to Russian</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+      <!-- Translate SR -->
+      <div class="preset-card">
+        <div class="preset-icon" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.2);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(59,130,246,0.75)" stroke-width="3.5"/>
+            <text x="36" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="18" fill="rgba(59,130,246,0.9)" text-anchor="middle">SR</text>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(59,130,246,0.75)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(59,130,246,0.75)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(59,130,246,0.75)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(59,130,246,0.75)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Translate SR</div>
+        <div class="preset-desc">Translate to Serbian</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+      <!-- Translate DE -->
+      <div class="preset-card">
+        <div class="preset-icon" style="background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.2);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(234,179,8,0.75)" stroke-width="3.5"/>
+            <text x="36" y="44" font-family="system-ui,sans-serif" font-weight="700" font-size="18" fill="rgba(234,179,8,0.9)" text-anchor="middle">DE</text>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(234,179,8,0.75)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(234,179,8,0.75)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(234,179,8,0.75)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(234,179,8,0.75)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Translate DE</div>
+        <div class="preset-desc">Translate to German</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+      <!-- Summarize col2 — actionProcessing style -->
+      <div class="preset-card col2">
+        <div class="preset-icon" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="20" fill="none" stroke="rgba(245,158,11,0.85)" stroke-width="3"
+              stroke-dasharray="11 7" stroke-linecap="round"/>
+            <circle cx="28" cy="36" r="3" fill="rgba(245,158,11,0.85)"/>
+            <circle cx="36" cy="36" r="3" fill="rgba(245,158,11,0.85)"/>
+            <circle cx="44" cy="36" r="3" fill="rgba(245,158,11,0.85)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="preset-name">Summarize</div>
+          <div class="preset-desc">Get a concise summary of long content — articles, docs, emails</div>
+          <div class="preset-action">
+            <div class="action-dot copy"></div>
+            <span class="action-label">Copies to clipboard</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Explain Code col2 — actionIcon chip violet -->
+      <div class="preset-card col2">
+        <div class="preset-icon" style="background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(139,92,246,0.9)" stroke-width="3.5"/>
+            <rect x="26" y="26" width="20" height="20" rx="3" fill="rgba(139,92,246,0.9)"/>
+            <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="36" x2="10" y2="36" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="36" x2="62" y2="36" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="27" y1="18" x2="27" y2="10" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="18" x2="36" y2="10" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="45" y1="18" x2="45" y2="10" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="27" y1="54" x2="27" y2="62" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="36" y1="54" x2="36" y2="62" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+            <line x1="45" y1="54" x2="45" y2="62" stroke="rgba(139,92,246,0.9)" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="preset-name">Explain Code</div>
+          <div class="preset-desc">Understand any code snippet in plain English</div>
+          <div class="preset-action">
+            <div class="action-dot copy"></div>
+            <span class="action-label">Copies to clipboard</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Professional — actionSuccess checkmark, slate -->
+      <div class="preset-card">
+        <div class="preset-icon" style="background:rgba(100,116,139,0.15);border:1px solid rgba(100,116,139,0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="22" fill="none" stroke="rgba(148,163,184,0.7)" stroke-width="3.5"/>
+            <polyline points="24,37 32,45 48,27" fill="none" stroke="rgba(148,163,184,0.85)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Professional</div>
+        <div class="preset-desc">Rewrite in formal, professional tone</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+      <!-- Casual — actionSuccess checkmark, green -->
+      <div class="preset-card">
+        <div class="preset-icon" style="background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.25);">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="22" fill="none" stroke="rgba(34,197,94,0.75)" stroke-width="3.5"/>
+            <polyline points="24,37 32,45 48,27" fill="none" stroke="rgba(34,197,94,0.9)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="preset-name">Casual</div>
+        <div class="preset-desc">Make text friendly & conversational</div>
+        <div class="preset-action">
+          <div class="action-dot paste"></div>
+          <span class="action-label">Pastes result</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="encoder-hint">
+      All presets available on <span>Stream Deck+ encoder dial</span> — rotate to switch, press to run
+    </div>
+  </div>
+
+</body>
+</html>

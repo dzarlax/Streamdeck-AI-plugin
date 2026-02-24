@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1920">
+  <title>AI Assistant – Providers</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 1920px;
+      height: 960px;
+      background: #0f0f1a;
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      width: 1000px; height: 1000px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 65%);
+      top: -400px; right: -200px;
+    }
+    body::after {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 65%);
+      bottom: -200px; left: 200px;
+    }
+
+    /* LEFT */
+    .left {
+      width: 680px;
+      padding: 100px 80px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #6366f1;
+      margin-bottom: 24px;
+    }
+
+    .title {
+      font-size: 60px;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: -1.5px;
+      line-height: 1.05;
+      margin-bottom: 24px;
+    }
+
+    .title span {
+      background: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.6;
+      margin-bottom: 52px;
+      max-width: 440px;
+    }
+
+    .model-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .model-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 16px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .model-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #6366f1;
+      flex-shrink: 0;
+    }
+
+    .model-name {
+      color: rgba(255,255,255,0.75);
+      font-weight: 500;
+    }
+
+    /* DIVIDER */
+    .divider {
+      width: 1px;
+      height: 700px;
+      background: linear-gradient(to bottom, transparent, rgba(99,102,241,0.25) 20%, rgba(99,102,241,0.25) 80%, transparent);
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* RIGHT — provider cards */
+    .right {
+      flex: 1;
+      padding: 80px 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .provider-card {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      padding: 28px 36px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      transition: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .provider-card.featured {
+      background: rgba(99,102,241,0.08);
+      border-color: rgba(99,102,241,0.2);
+    }
+
+    .provider-card.featured::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: linear-gradient(to bottom, #6366f1, #a78bfa);
+    }
+
+    .provider-logo {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    /* Custom logo backgrounds */
+    .logo-openai   { background: rgba(16,163,127,0.15); }
+    .logo-anthropic{ background: rgba(205,154,109,0.15); }
+    .logo-google   { background: rgba(66,133,244,0.15); }
+    .logo-openrouter { background: rgba(139,92,246,0.15); }
+    .logo-custom   { background: rgba(255,255,255,0.06); }
+
+    .provider-logo svg { width: 32px; height: 32px; }
+
+    .provider-info { flex: 1; }
+
+    .provider-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .provider-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .provider-models {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .model-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      font-weight: 500;
+    }
+
+    .model-badge.highlight {
+      background: rgba(99,102,241,0.15);
+      border-color: rgba(99,102,241,0.25);
+      color: #818cf8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="left">
+    <!-- pluginIcon.svg inline as decoration -->
+    <div style="position:absolute;top:60px;left:80px;opacity:0.08;">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="180" height="180">
+        <rect width="256" height="256" rx="40" fill="#6366f1"/>
+        <g fill="#ffffff" opacity="0.5">
+          <circle cx="196" cy="60" r="4"/>
+          <line x1="196" y1="48" x2="196" y2="72" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="184" y1="60" x2="208" y2="60" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="187" y1="51" x2="205" y2="69" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+          <line x1="205" y1="51" x2="187" y2="69" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+        </g>
+        <text x="128" y="158" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="110" fill="#ffffff" text-anchor="middle" dominant-baseline="auto">AI</text>
+      </svg>
+    </div>
+    <div class="eyebrow">Provider Support</div>
+    <div class="title">Your AI,<br>your <span>choice</span></div>
+    <div class="subtitle">Connect to any major AI provider or your own custom endpoint. Switch anytime in settings.</div>
+
+    <div class="model-list">
+      <div class="model-item">
+        <div class="model-dot"></div>
+        <span class="model-name">GPT-5, GPT-4.1, o3, o4-mini</span>
+        <span>— OpenAI</span>
+      </div>
+      <div class="model-item">
+        <div class="model-dot"></div>
+        <span class="model-name">Claude Sonnet 4, Haiku</span>
+        <span>— Anthropic</span>
+      </div>
+      <div class="model-item">
+        <div class="model-dot"></div>
+        <span class="model-name">Gemini 3 Flash, 2.5 Pro</span>
+        <span>— Google</span>
+      </div>
+      <div class="model-item">
+        <div class="model-dot"></div>
+        <span class="model-name">100+ models via API</span>
+        <span>— OpenRouter</span>
+      </div>
+      <div class="model-item">
+        <div class="model-dot"></div>
+        <span class="model-name">Any OpenAI-compatible</span>
+        <span>— Custom URL</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="right">
+
+    <div class="provider-card featured">
+      <div class="provider-logo logo-openai">
+        <!-- AI chip icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+          <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(16,163,127,0.9)" stroke-width="3.5"/>
+          <rect x="26" y="26" width="20" height="20" rx="3" fill="rgba(16,163,127,0.9)"/>
+          <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="18" y1="36" x2="10" y2="36" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="36" x2="62" y2="36" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="27" y1="18" x2="27" y2="10" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="18" x2="36" y2="10" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="45" y1="18" x2="45" y2="10" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="27" y1="54" x2="27" y2="62" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="54" x2="36" y2="62" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="45" y1="54" x2="45" y2="62" stroke="rgba(16,163,127,0.9)" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="provider-info">
+        <div class="provider-name">OpenAI</div>
+        <div class="provider-desc">Industry-leading GPT models</div>
+      </div>
+      <div class="provider-models">
+        <span class="model-badge highlight">GPT-5</span>
+        <span class="model-badge">GPT-4.1</span>
+        <span class="model-badge">o3</span>
+      </div>
+    </div>
+
+    <div class="provider-card featured">
+      <div class="provider-logo logo-anthropic">
+        <!-- pluginIcon style — "AI" text with sparkle, anthropic color -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+          <rect width="72" height="72" rx="12" fill="rgba(205,154,109,0.2)"/>
+          <text x="36" y="46" font-family="system-ui,-apple-system,sans-serif" font-weight="700" font-size="28" fill="rgba(205,154,109,0.95)" text-anchor="middle">AI</text>
+          <circle cx="56" cy="18" r="3" fill="rgba(205,154,109,0.7)"/>
+          <line x1="56" y1="11" x2="56" y2="25" stroke="rgba(205,154,109,0.7)" stroke-width="1.8" stroke-linecap="round"/>
+          <line x1="49" y1="18" x2="63" y2="18" stroke="rgba(205,154,109,0.7)" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="provider-info">
+        <div class="provider-name">Anthropic</div>
+        <div class="provider-desc">Claude — thoughtful & precise</div>
+      </div>
+      <div class="provider-models">
+        <span class="model-badge highlight">Sonnet 4</span>
+        <span class="model-badge">Haiku</span>
+        <span class="model-badge">Opus</span>
+      </div>
+    </div>
+
+    <div class="provider-card">
+      <div class="provider-logo logo-google">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+          <rect width="72" height="72" rx="12" fill="rgba(66,133,244,0.15)"/>
+          <!-- sparkle / star shape -->
+          <polygon points="36,12 39,29 56,32 39,35 36,52 33,35 16,32 33,29" fill="rgba(66,133,244,0.9)"/>
+          <circle cx="55" cy="19" r="4" fill="rgba(66,133,244,0.5)"/>
+        </svg>
+      </div>
+      <div class="provider-info">
+        <div class="provider-name">Google Gemini</div>
+        <div class="provider-desc">Fast & multimodal AI</div>
+      </div>
+      <div class="provider-models">
+        <span class="model-badge">Gemini 3 Flash</span>
+        <span class="model-badge">Gemini 2.5 Pro</span>
+      </div>
+    </div>
+
+    <div class="provider-card">
+      <div class="provider-logo logo-openrouter">
+        <!-- processing/spinner icon style -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="20" fill="none" stroke="rgba(139,92,246,0.8)" stroke-width="3"
+            stroke-dasharray="11 7" stroke-linecap="round"/>
+          <circle cx="28" cy="36" r="3" fill="rgba(139,92,246,0.8)"/>
+          <circle cx="36" cy="36" r="3" fill="rgba(139,92,246,0.8)"/>
+          <circle cx="44" cy="36" r="3" fill="rgba(139,92,246,0.8)"/>
+        </svg>
+      </div>
+      <div class="provider-info">
+        <div class="provider-name">OpenRouter</div>
+        <div class="provider-desc">100+ models, one API key</div>
+      </div>
+      <div class="provider-models">
+        <span class="model-badge">Llama</span>
+        <span class="model-badge">Mistral</span>
+        <span class="model-badge">+ more</span>
+      </div>
+    </div>
+
+    <div class="provider-card">
+      <div class="provider-logo logo-custom">
+        <!-- actionIcon chip, muted white -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72">
+          <rect x="18" y="18" width="36" height="36" rx="6" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3.5"/>
+          <rect x="26" y="26" width="20" height="20" rx="3" fill="rgba(255,255,255,0.35)"/>
+          <line x1="18" y1="27" x2="10" y2="27" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="18" y1="36" x2="10" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="18" y1="45" x2="10" y2="45" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="27" x2="62" y2="27" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="36" x2="62" y2="36" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="54" y1="45" x2="62" y2="45" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="27" y1="18" x2="27" y2="10" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="18" x2="36" y2="10" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="45" y1="18" x2="45" y2="10" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="27" y1="54" x2="27" y2="62" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="36" y1="54" x2="36" y2="62" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+          <line x1="45" y1="54" x2="45" y2="62" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="provider-info">
+        <div class="provider-name">Custom Endpoint</div>
+        <div class="provider-desc">Any OpenAI-compatible API or local model</div>
+      </div>
+      <div class="provider-models">
+        <span class="model-badge">Ollama</span>
+        <span class="model-badge">LM Studio</span>
+        <span class="model-badge">Self-hosted</span>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
