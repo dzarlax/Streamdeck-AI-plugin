@@ -1,7 +1,7 @@
 {
   "UUID": "com.dzarlax.ai-assistant",
   "Name": "AI Assistant",
-  "Version": "1.0.3.0",
+  "Version": "1.0.0.0",
   "Author": "dzarlax",
   "Description": "AI-powered text processing with OpenAI, Anthropic Claude, Google Gemini, OpenRouter, or custom endpoints. Includes 9 built-in presets: Fix Grammar, Translate (EN/RU/SR/DE), Summarize, Explain Code, Professional, and Casual tone rewrites.",
   "Icon": "imgs/pluginIcon",
