@@ -29,9 +29,20 @@ export async function copyToClipboard(text: string): Promise<void> {
             proc.stdin.end();
         });
     } else {
-        const escapedText = text.replace(/'/g, "''");
-        await execAsync(`powershell -command "Set-Clipboard -Value '${escapedText}'"`, {
-            encoding: 'utf8'
+        // Use stdin pipe to avoid shell escaping issues with special characters
+        // (double quotes, dollar signs, backticks in AI responses break exec interpolation)
+        return new Promise((resolve, reject) => {
+            const proc = spawn('powershell', [
+                '-NoProfile', '-NonInteractive', '-Command',
+                '[Console]::InputEncoding = [Text.Encoding]::UTF8; $t = [Console]::In.ReadToEnd(); Set-Clipboard -Value $t'
+            ], { env: process.env });
+            proc.on('close', (code) => {
+                if (code === 0) resolve();
+                else reject(new Error(`powershell Set-Clipboard exited with code ${code}`));
+            });
+            proc.on('error', reject);
+            proc.stdin.write(text, 'utf8');
+            proc.stdin.end();
         });
     }
 }
@@ -48,10 +59,11 @@ export async function pasteFromClipboard(): Promise<string> {
         });
         return stdout;
     } else {
-        const { stdout } = await execAsync('powershell -command "Get-Clipboard"', {
+        const { stdout } = await execAsync('powershell -NoProfile -NonInteractive -command "Get-Clipboard"', {
             encoding: 'utf8'
         });
-        return stdout.trim();
+        // trimEnd to remove the trailing \r\n that PowerShell adds, but preserve leading whitespace
+        return stdout.trimEnd();
     }
 }
 
@@ -64,9 +76,9 @@ export async function simulateCopy(): Promise<void> {
         // key code 8 = "c" on US layout, works regardless of active input method
         await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 8 using {command down}'`);
     } else {
-        await execAsync(`powershell -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^c')"`);
+        await execAsync(`powershell -NoProfile -NonInteractive -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^c')"`);
     }
-    await new Promise(resolve => setTimeout(resolve, 150));
+    await new Promise(resolve => setTimeout(resolve, 300));
 }
 
 /**
@@ -78,6 +90,6 @@ export async function simulatePaste(): Promise<void> {
         // key code 9 = "v" on US layout, works regardless of active input method
         await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 9 using {command down}'`);
     } else {
-        await execAsync(`powershell -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^v')"`);
+        await execAsync(`powershell -NoProfile -NonInteractive -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^v')"`);
     }
 }

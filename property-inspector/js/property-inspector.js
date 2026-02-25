@@ -72,35 +72,6 @@ const DEFAULT_ENCODER_PRESETS = [
   { key: 'casual', enabled: true }
 ];
 
-const FALLBACK_MODELS = {
-  openai: [
-    { id: 'gpt-5', name: 'GPT-5' },
-    { id: 'gpt-4.1', name: 'GPT-4.1' },
-    { id: 'gpt-4.1-mini', name: 'GPT-4.1 Mini' },
-    { id: 'o3', name: 'o3' },
-    { id: 'o4-mini', name: 'o4-mini' }
-  ],
-  anthropic: [
-    { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
-    { id: 'claude-3-7-sonnet-latest', name: 'Claude 3.7 Sonnet' },
-    { id: 'claude-3-5-haiku-20241022', name: 'Claude 3.5 Haiku' },
-    { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus' }
-  ],
-  gemini: [
-    { id: 'gemini-3-flash-preview', name: 'Gemini 3 Flash' },
-    { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
-    { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
-    { id: 'gemini-2.5-flash-lite', name: 'Gemini 2.5 Flash Lite' }
-  ],
-  openrouter: [
-    { id: 'anthropic/claude-sonnet-4', name: 'Claude Sonnet 4' },
-    { id: 'openai/gpt-4.1', name: 'GPT-4.1' },
-    { id: 'openai/gpt-5', name: 'GPT-5' },
-    { id: 'google/gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
-    { id: 'meta-llama/llama-3.1-70b-instruct', name: 'Llama 3.1 70B' }
-  ],
-  custom: []
-};
 
 let globalSettings = {
   provider: 'openai',
@@ -109,7 +80,8 @@ let globalSettings = {
   model: 'gpt-4.1',
   temperature: 0.7,
   maxTokens: 4096,
-  timeout: 30
+  timeout: 30,
+  modelCache: {}
 };
 
 let actionSettings = {
@@ -233,7 +205,6 @@ async function fetchModels() {
   const endpoint = getModelsEndpoint(provider, baseUrl);
   if (!endpoint) {
     statusEl.textContent = 'Cannot fetch for this provider';
-    populateModelSelect(FALLBACK_MODELS[provider] || []);
     return;
   }
 
@@ -258,15 +229,16 @@ async function fetchModels() {
     const models = parseModelsResponse(provider, data);
 
     if (models.length === 0) {
-      statusEl.textContent = 'No models found, showing defaults';
-      populateModelSelect(FALLBACK_MODELS[provider] || []);
+      statusEl.textContent = 'No models found';
     } else {
       statusEl.textContent = models.length + ' models loaded';
+      if (!globalSettings.modelCache) globalSettings.modelCache = {};
+      globalSettings.modelCache[provider] = models;
+      saveGlobalSettings();
       populateModelSelect(models);
     }
   } catch (err) {
     statusEl.textContent = 'Failed: ' + err.message;
-    populateModelSelect(FALLBACK_MODELS[provider] || []);
   } finally {
     btn.disabled = false;
     btn.textContent = 'Fetch';
@@ -287,27 +259,46 @@ function populateModelSelect(models) {
     select.appendChild(opt);
   });
 
-  const customOpt = document.createElement('option');
-  customOpt.value = '__custom__';
-  customOpt.textContent = 'Custom model...';
-  select.appendChild(customOpt);
-
-  const inList = models.some(m => m.id === current);
-  if (inList) {
+  if (models.some(m => m.id === current)) {
     select.value = current;
-    document.getElementById('customModelGroup').style.display = 'none';
-  } else if (current) {
-    select.value = '__custom__';
-    document.getElementById('customModelInput').value = current;
-    document.getElementById('customModelGroup').style.display = 'block';
+  } else if (models.length > 0) {
+    select.value = models[0].id;
   }
 }
 
 function getSelectedModel() {
-  const sel = document.getElementById('modelSelect');
-  return sel.value === '__custom__'
-    ? (document.getElementById('customModelInput').value || '')
-    : sel.value;
+  const provider = document.getElementById('provider').value;
+  if (provider === 'custom') {
+    return document.getElementById('customModelInput').value || '';
+  }
+  return document.getElementById('modelSelect').value || '';
+}
+
+function updateModelUI(provider) {
+  const isCustom = provider === 'custom';
+  document.getElementById('modelSelectRow').style.display = isCustom ? 'none' : '';
+  document.getElementById('customModelGroup').style.display = isCustom ? 'block' : 'none';
+
+  if (isCustom) {
+    document.getElementById('customModelInput').value = globalSettings.model || '';
+  } else {
+    const cached = (globalSettings.modelCache || {})[provider];
+    if (cached && cached.length > 0) {
+      populateModelSelect(cached);
+      document.getElementById('fetchStatus').textContent = cached.length + ' models (cached)';
+    } else {
+      const select = document.getElementById('modelSelect');
+      select.innerHTML = '';
+      const currentModel = globalSettings.model || '';
+      if (currentModel) {
+        const opt = document.createElement('option');
+        opt.value = currentModel;
+        opt.textContent = currentModel;
+        select.appendChild(opt);
+      }
+      document.getElementById('fetchStatus').textContent = 'Click Fetch to load models';
+    }
+  }
 }
 
 function updateGlobalUI() {
@@ -321,7 +312,7 @@ function updateGlobalUI() {
   document.getElementById('timeout').value = globalSettings.timeout || 30;
 
   toggleBaseUrl();
-  populateModelSelect(FALLBACK_MODELS[provider] || FALLBACK_MODELS.openai);
+  updateModelUI(provider);
 }
 
 function updateActionUI() {
@@ -340,7 +331,8 @@ function saveGlobalSettings() {
     model: getSelectedModel(),
     temperature: parseFloat(document.getElementById('temperature').value),
     maxTokens: parseInt(document.getElementById('maxTokens').value),
-    timeout: parseInt(document.getElementById('timeout').value)
+    timeout: parseInt(document.getElementById('timeout').value),
+    modelCache: globalSettings.modelCache || {}
   };
   if (websocket) {
     websocket.send(JSON.stringify({ event: 'setGlobalSettings', context: uuid, payload: globalSettings }));
@@ -513,10 +505,10 @@ function resetEncoderPresets() {
 document.addEventListener('DOMContentLoaded', () => {
   // Provider
   document.getElementById('provider').addEventListener('change', () => {
-    toggleBaseUrl();
     const p = document.getElementById('provider').value;
+    toggleBaseUrl();
     document.getElementById('fetchStatus').textContent = '';
-    populateModelSelect(FALLBACK_MODELS[p] || []);
+    updateModelUI(p);
     saveGlobalSettings();
   });
 
@@ -526,11 +518,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Model select
-  document.getElementById('modelSelect').addEventListener('change', () => {
-    const v = document.getElementById('modelSelect').value;
-    document.getElementById('customModelGroup').style.display = v === '__custom__' ? 'block' : 'none';
-    saveGlobalSettings();
-  });
+  document.getElementById('modelSelect').addEventListener('change', saveGlobalSettings);
 
   document.getElementById('customModelInput')?.addEventListener('change', saveGlobalSettings);
 
