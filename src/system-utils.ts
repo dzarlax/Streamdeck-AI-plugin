@@ -9,6 +9,7 @@ export const isMac = process.platform === 'darwin';
 const PBCOPY = '/usr/bin/pbcopy';
 const PBPASTE = '/usr/bin/pbpaste';
 const OSASCRIPT = '/usr/bin/osascript';
+const POWERSHELL = `${process.env.SystemRoot || 'C:\\Windows'}/System32/WindowsPowerShell/v1.0/powershell.exe`;
 
 const UTF8_ENV = { ...process.env, LANG: 'en_US.UTF-8', LC_ALL: 'en_US.UTF-8' };
 
@@ -32,7 +33,7 @@ export async function copyToClipboard(text: string): Promise<void> {
         // Use stdin pipe to avoid shell escaping issues with special characters
         // (double quotes, dollar signs, backticks in AI responses break exec interpolation)
         return new Promise((resolve, reject) => {
-            const proc = spawn('powershell', [
+            const proc = spawn(POWERSHELL, [
                 '-NoProfile', '-NonInteractive', '-Command',
                 '[Console]::InputEncoding = [Text.Encoding]::UTF8; $t = [Console]::In.ReadToEnd(); Set-Clipboard -Value $t'
             ], { env: process.env });
@@ -59,12 +60,30 @@ export async function pasteFromClipboard(): Promise<string> {
         });
         return stdout;
     } else {
-        const { stdout } = await execAsync('powershell -NoProfile -NonInteractive -command "Get-Clipboard"', {
+        const { stdout } = await execAsync(`"${POWERSHELL}" -NoProfile -NonInteractive -command "[Console]::OutputEncoding = [Text.Encoding]::UTF8; Get-Clipboard"`, {
             encoding: 'utf8'
         });
         // trimEnd to remove the trailing \r\n that PowerShell adds, but preserve leading whitespace
         return stdout.trimEnd();
     }
+}
+
+/**
+ * Simulates a key combo on Windows using keybd_event (no struct marshaling issues).
+ * keybd_event is simpler than SendInput and doesn't toggle NumLock/CapsLock like SendKeys.
+ */
+function winKeyCombo(vkMod: number, vkKey: number): Promise<void> {
+    const script = `Add-Type -MemberDefinition '[DllImport("user32.dll")] public static extern void keybd_event(byte k,byte s,uint f,UIntPtr x);' -Name U -Namespace W; [W.U]::keybd_event(${vkMod},0,0,[UIntPtr]::Zero); [W.U]::keybd_event(${vkKey},0,0,[UIntPtr]::Zero); [W.U]::keybd_event(${vkKey},0,2,[UIntPtr]::Zero); [W.U]::keybd_event(${vkMod},0,2,[UIntPtr]::Zero)`;
+    return new Promise((resolve, reject) => {
+        const proc = spawn(POWERSHELL, [
+            '-NoProfile', '-NonInteractive', '-Command', script
+        ], { env: process.env });
+        proc.on('close', (code) => {
+            if (code === 0) resolve();
+            else reject(new Error(`PowerShell keybd_event exited with code ${code}`));
+        });
+        proc.on('error', reject);
+    });
 }
 
 /**
@@ -76,7 +95,8 @@ export async function simulateCopy(): Promise<void> {
         // key code 8 = "c" on US layout, works regardless of active input method
         await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 8 using {command down}'`);
     } else {
-        await execAsync(`powershell -NoProfile -NonInteractive -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^c')"`);
+        // VK_CONTROL=0x11, VK_C=0x43
+        await winKeyCombo(0x11, 0x43);
     }
     await new Promise(resolve => setTimeout(resolve, 300));
 }
@@ -90,6 +110,7 @@ export async function simulatePaste(): Promise<void> {
         // key code 9 = "v" on US layout, works regardless of active input method
         await execAsync(`"${OSASCRIPT}" -e 'tell application "System Events" to key code 9 using {command down}'`);
     } else {
-        await execAsync(`powershell -NoProfile -NonInteractive -command "$wshell = New-Object -ComObject WScript.Shell; $wshell.SendKeys('^v')"`);
+        // VK_CONTROL=0x11, VK_V=0x56
+        await winKeyCombo(0x11, 0x56);
     }
 }
